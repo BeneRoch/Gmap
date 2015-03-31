@@ -104,7 +104,7 @@ BB.gmap.line.prototype.set_paths = function( paths )
 	if (!(paths[0] instanceof google.maps.LatLng)) {
 		var i = 0;
 		var count = paths.length;
-		var coords = [];
+		var coords = new google.maps.MVCArray;
 		for (; i<count; i++) {
 			if (typeof paths[i] != 'object') {
 				// Error.
@@ -112,8 +112,9 @@ BB.gmap.line.prototype.set_paths = function( paths )
 			}
 			var push = this.controller().translate_coords(paths[i]);
 
-			coords.push( push );
+			coords.insertAt( coords.length, push );
 		}
+		console.log(coords);
 
 		paths = coords;
 	}
@@ -123,7 +124,6 @@ BB.gmap.line.prototype.set_paths = function( paths )
 
 BB.gmap.line.prototype.get_paths = function()
 {
-
 	return this.__PATHS;
 }
 
@@ -216,4 +216,45 @@ BB.gmap.line.prototype.set_map = function( map )
 	this.object().setMap( map );
 
 	return this;
+}
+
+/**
+* @param path Coords or the point
+*/
+BB.gmap.line.prototype.add_point = function(path, index)
+{
+
+	// Not good
+	if (typeof path != 'object') {
+		return false;
+	}
+
+	if (typeof path[ 0 ] == 'undefined' || typeof path[ 1 ] == 'undefined') {
+		// Something missing
+		return false;
+	}
+
+	// Not good.
+	if ( !(path[0] instanceof google.maps.LatLng) ) {
+		path = this.controller().translate_coords(path)
+	}
+
+	if (typeof index == 'number') {
+		index = this.get_paths().length;
+	}
+
+	this.get_paths().insertAt(index, path);
+	return this;
+}
+
+/**
+* @param boolean
+*/
+BB.gmap.line.prototype.set_editable = function(param)
+{
+	if (!param) {
+
+	}
+	// Add listeners and stuff
+
 }

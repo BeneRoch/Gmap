@@ -135,6 +135,15 @@ BB.gmap.marker.prototype.display = function()
 	   	optimized: false
 	}
 
+	// Mini extend
+	var custom_options = ( typeof _data['options'] == 'object' ) ? _data[ 'options' ] : {};
+	for (var k in custom_options) {
+		options[ k ] = custom_options[ k ];
+	}
+
+	// console.log(custom_options);
+	// console.log(options);
+
 	if (typeof this.marker() != 'undefined') {
 		this.marker().setOptions(options);
 	} else {

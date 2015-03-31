@@ -47,7 +47,7 @@ BB.gmap = BB.gmap || {};
 BB.gmap.controller = function(container, data)
 {
 	this._MAP;
-	this._CONTAINER = container;
+	this.__CONTAINER = container;
 
 	this._MARKERS = {};
 	this.__PLACES = {
@@ -86,6 +86,11 @@ BB.gmap.controller.prototype.set_zoom = function(zoom)
 {
 	this.map().setZoom( zoom );
 }
+BB.gmap.controller.prototype.container = function()
+{
+
+	return this.__CONTAINER;
+}
 
 /**
 * MAP OPTIONS
@@ -109,7 +114,7 @@ BB.gmap.controller.prototype.init = function()
 	map_options.center = new google.maps.LatLng(parseFloat(map_options.center.x), parseFloat(map_options.center.y));
 
 	// Affect new map object
-	this._MAP = new google.maps.Map(this._CONTAINER, map_options);
+	this._MAP = new google.maps.Map(this.container(), map_options);
 
 	// Any places yet?
 	if (typeof _data[ 'places' ] == 'undefined') {
@@ -199,6 +204,7 @@ BB.gmap.controller.prototype.add_place = function( ident, data )
 	data[ 'ident' ] = ident;
 
 	var type = data['type'];
+
 
 	switch (type) {
 		case 'marker':
@@ -314,8 +320,9 @@ BB.gmap.controller.prototype.get_place = function( ident )
 	for (var k in places)
 	{
 		var places_by_type = this.get_places_by_type( k );
+
 		if (!this.is_empty_object( places_by_type )) {
-			place = typeof places_by_type[ ident ] == 'object' ? places_by_type[ ident ] : false;
+			place = typeof places_by_type[ ident ] == 'object' ? places_by_type[ ident ] : place;
 		}
 	}
 

@@ -31,7 +31,7 @@ BB.base = function()
 	this.__BB_DEBUG__	 = false;
 	this.__PROTECTED__   = [];
 
-	this._data = new BB.data();
+	this._data = undefined;
 };
 
 /**
@@ -41,6 +41,9 @@ BB.base = function()
 */
 BB.base.prototype.set_data = function(data)
 {
+	if (typeof this._data == 'undefined') {
+		this._data = new BB.data();
+	}
 	if (typeof data != 'object') {
 		return this;
 	}
@@ -72,7 +75,7 @@ BB.base.prototype.get_data = function(key)
 	if (typeof data[ key ] != 'undefined') {
 		return data[ key ];
 	}
-	return {};
+	return false;
 };
 
 /**
