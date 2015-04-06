@@ -1,0 +1,634 @@
+<doctype>
+<html>
+	
+	<body>
+
+<section class="home">
+
+	<h1>agna</h1>
+
+	<video style="width: 500px; height: 500px;" id="camera_video" autoplay></video>
+
+	<img style=""  id="camera_snapshot" src="">
+
+	<div id="container">
+
+	</div>
+
+	
+	<script>
+	// 	var video = document.getElementById('camera_video');
+	// 	var canvas = document.getElementById('camera_canvas');
+	// 	var ctx = canvas.getContext('2d');
+	// 	var localMediaStream = null;
+
+	// 	function snapshot(ev) 
+	// 	{
+	// 		if (localMediaStream) {
+	// 			ctx.drawImage(video, 0, 0);
+	// 			var img = document.getElementById('camera_snapshot');
+	// 			img.src = canvas.toDataURL('image/png');
+	// 			// localMediaStream.stop();
+	// 		}
+	// 	}
+
+	// 	video.addEventListener('click', snapshot, false);
+
+	// 	navigator.getUserMedia = (
+	// 		navigator.getUserMedia ||
+	// 		navigator.webkitGetUserMedia ||
+	// 		navigator.mozGetUserMedia ||
+	// 		navigator.msGetUserMedia
+	// 	);
+	// 	navigator.getUserMedia({video: true}, function(stream) {
+	// 		video.src = window.URL.createObjectURL(stream);
+	// 		localMediaStream = stream;
+	// 	}, function(e) {
+	// 		alert('Enable the webcam to continue.');
+	// 	});
+
+	// 	document.getElementById('capture').addEventListener('change', load_image, false);
+
+	// 	function load_image(event) 
+	// 	{
+	// 		var img = document.getElementById('camera_snapshot');
+	// 		img.src = URL.createObjectURL(event.target.files[0]);
+	// 	};
+
+
+		var BB = BB || {};
+
+		/**
+		* http://www.williammalone.com/articles/create-html5-canvas-javascript-drawing-app/#demo-simple
+		* Simple tutorial cool
+		* Canvas item class
+		* Will concern everything about a new layer on the canvas such
+		* as images or whatever.
+		*/
+		BB.canvasItem = function( data ) {
+
+		}
+
+		BB.canvasItem.prototype.init = function()
+		{
+
+
+		}
+
+
+		BB.canvas = function( data )
+		{
+			// Id | String
+			this._id = '';
+
+			// Canvas object (upon creation)
+			// @see this.init()
+			this._canvas;
+
+			// Dimensions
+			// integer
+			this._width = 0;
+			this._height = 0;
+
+			// Container
+			this._container;
+
+			// Video element
+			this._video;
+
+			// Stream element from getUserMedia
+			this._stream
+
+
+			// Events
+			// Some events we might wanna remember
+			this._mousedownX;
+			this._mousedownY;
+			this._mouseupX;
+			this._mouseupY;
+
+			this._previous_position = [0, 0];
+			this._current_position = [0, 0];
+
+
+
+			// No data, let's stop here
+			if (!data) {
+				return this;
+			}
+
+			// Set ID
+			if (typeof data.id == 'string') {
+				this.set_id( data.id );
+			}
+
+			if (typeof data.width == 'number') {
+				this.set_width( data.width );
+			}
+			if (typeof data.height == 'number') {
+				this.set_height( data.height );
+			}
+			if (typeof data.container != 'undefined') {
+				this.set_container( data.container );
+			}
+			if (typeof data.video != 'undefined') {
+				this.set_video( data.video );
+			}
+			this.init();
+		}
+
+		/**
+		* Creates the canvas object
+		*/
+		BB.canvas.prototype.init = function()
+		{
+			if (!this.id()) {
+				// Requires an ID
+				return false;
+			}
+			this._canvas = document.createElement('CANVAS');
+			this._canvas.width = this.width();
+			this._canvas.height = this.height();
+			this._canvas.id = this.id();
+
+			this.display();
+
+			return this;
+		}
+
+		BB.canvas.prototype.display = function()
+		{
+			if (!this.container()) {
+				// We need a container..
+				return this;
+			}
+			var container = this.container();
+			container.appendChild(this.canvas());
+
+			this.enable_capture();
+
+			return this;
+
+		}
+
+
+		BB.canvas.prototype.enable_capture = function()
+		{
+			if (!this.video()) {
+				// No video?
+				return this;
+			}
+
+			navigator.getUserMedia = (
+				navigator.getUserMedia ||
+				navigator.webkitGetUserMedia ||
+				navigator.mozGetUserMedia ||
+				navigator.msGetUserMedia
+			);
+
+			var that = this;
+			
+			navigator.getUserMedia({video: true}, function(stream) {
+
+				that.set_stream(stream).open_stream();
+
+			}, function(e) {
+				that.no_webcam();
+				alert('Enable the webcam to continue.');
+			});
+
+			return this;
+		}
+
+		BB.canvas.prototype.open_stream = function()
+		{
+			if (!this.stream() || !this.video()) {
+				return this;
+			}
+
+			this.video().src = window.URL.createObjectURL( this.stream() );
+
+			return this;
+		}
+
+		BB.canvas.prototype.no_webcam = function()
+		{
+			alert('Enable the webcam to continue.');
+
+			return this;
+		}
+
+		BB.canvas.prototype.draw_circle = function() {
+			this.context().beginPath();
+			this.context().arc(95,50,40,0,2*Math.PI);
+			this.context().stroke();
+		}
+
+		BB.canvas.prototype.capture = function(x, y)
+		{
+			if (!this.stream() || !this.context() || !this.video()) {
+				// Needs the stream
+				return this;
+			}
+			var x = x || 0;
+			var y = y || 0;
+
+			this.context().drawImage( this.video(), x, y);
+
+			return this;
+
+		}
+
+
+		/*	############################ SETTERS ############################# */
+		/**
+		* Sets the canvas ID
+		*/
+		BB.canvas.prototype.set_id = function( id )
+		{
+			this._id = id;
+
+			return this;
+
+		}
+
+		/**
+		* Sets the canvas WIDTH
+		*/
+		BB.canvas.prototype.set_width = function( width )
+		{
+			this._width = width;
+
+			return this;
+
+		}
+
+		/**
+		* Sets the canvas HEIGHT
+		*/
+		BB.canvas.prototype.set_height = function( height )
+		{
+			this._height = height;
+
+			return this;
+
+		}
+
+		BB.canvas.prototype.set_container = function( DOMElement )
+		{
+			this._container = DOMElement;
+
+			return this;
+		}
+
+		/**
+		* Set the video element
+		*/
+		BB.canvas.prototype.set_video = function( video )
+		{
+			if (!video) {
+				// Need that DOM element
+				return this;
+			}
+			this._video = video;
+
+			return this;
+		}
+		/**
+		* Set the stream element
+		*/
+		BB.canvas.prototype.set_stream = function( stream )
+		{
+			if (!stream) {
+				// Need that DOM element
+				return this;
+			}
+			this._stream = stream;
+
+			return this;
+		}
+
+		/**
+		* Set the stream element
+		*/
+		BB.canvas.prototype.set_mousedownX = function( mousedownX )
+		{
+			if (!mousedownX) {
+				// Need that DOM element
+				return this;
+			}
+			this._mousedownX = mousedownX;
+
+			return this;
+		}
+
+		/**
+		* Set the stream element
+		*/
+		BB.canvas.prototype.set_mousedownY = function( mousedownY )
+		{
+			if (!mousedownY) {
+				// Need that DOM element
+				return this;
+			}
+			this._mousedownY = mousedownY;
+
+			return this;
+		}
+
+		/**
+		* Set the mouseupX element
+		*/
+		BB.canvas.prototype.set_mouseupX = function( mouseupX )
+		{
+			if (!mouseupX) {
+				// Need that DOM element
+				return this;
+			}
+			this._mouseupX = mouseupX;
+
+			return this;
+		}
+
+		/**
+		* Set the mouseupY element
+		*/
+		BB.canvas.prototype.set_mouseupY = function( mouseupY )
+		{
+			if (!mouseupY) {
+				// Need that DOM element
+				return this;
+			}
+			this._mouseupY = mouseupY;
+
+			return this;
+		}
+
+
+		/**
+		* Set the previous position of the element
+		* @param xy_array array [ position X, position Y ]
+		*/
+		BB.canvas.prototype.set_previous_position = function( xy_array )
+		{
+			if (typeof xy_array != 'object') {
+				return this;
+			}
+			this._previous_position = xy_array;
+
+			return this;
+		}
+
+		/**
+		* Set the previous position of the element
+		* @param xy_array array [ position X, position Y ]
+		*/
+		BB.canvas.prototype.set_current_position = function( xy_array )
+		{
+			if (typeof xy_array != 'object') {
+				return this;
+			}
+			this.set_previous_position( this._current_position );
+			this._current_position = xy_array;
+
+			return this;
+		}
+
+		/**
+		* Set the last mouseX position element
+		*/
+		BB.canvas.prototype.set_last_mouseX = function( y )
+		{
+			if (typeof y != 'number') {
+				y = 0;
+			}
+			this._last_mouse_position_y = y;
+
+			return this;
+		}
+
+
+
+		/*	############################ GETTERS ############################# */
+		BB.canvas.prototype.id = function()
+		{
+			return this._id;
+		}
+		BB.canvas.prototype.width = function()
+		{
+			return this._width;
+		}
+		BB.canvas.prototype.height = function()
+		{
+			return this._height;
+		}
+		BB.canvas.prototype.canvas = function()
+		{
+			return this._canvas;
+		}
+		BB.canvas.prototype.container = function()
+		{
+			return this._container;
+		}
+
+		BB.canvas.prototype.video = function()
+		{
+			return this._video;
+		}
+
+		BB.canvas.prototype.stream = function()
+		{
+			return this._stream;
+		}
+		BB.canvas.prototype.stream = function()
+		{
+			return this._stream;
+		}
+		BB.canvas.prototype.mousedownX = function()
+		{
+			return this._mousedownX;
+		}
+		BB.canvas.prototype.mousedownY = function()
+		{
+			return this._mousedownY;
+		}
+		BB.canvas.prototype.mouseupX = function()
+		{
+			return this._mouseupX;
+		}
+		BB.canvas.prototype.mouseupY = function()
+		{
+			return this._mouseupY;
+		}
+
+		BB.canvas.prototype.previous_position = function()
+		{
+			return this._previous_position;
+		}
+		BB.canvas.prototype.current_position = function()
+		{
+			return this._current_position;
+		}
+
+
+		BB.canvas.prototype.delta = function()
+		{
+			var prev = this.previous_position();
+			var current = this.current_position();
+
+			var ret = {
+				x : (( ( current[0] - prev[0] ) > 0 ) ? 1 : -1), 
+				y : (( ( current[1] - prev[1] ) > 0 ) ? 1 : -1)
+			};
+
+			return ret;
+
+		}
+		BB.canvas.prototype.last_mouseX = function()
+		{
+			return this._last_mouse_position_x;
+		}
+		BB.canvas.prototype.last_mouseY = function()
+		{
+			return this._last_mouse_position_y;
+		}
+
+		BB.canvas.prototype.context = function()
+		{
+			if (!this.canvas()) {
+				// Error...
+				return false;
+			}
+
+			if (!this._context) {
+				this._context = this.canvas().getContext('2d');
+			}
+
+			return this._context;
+		}
+
+
+
+		/* ============================ DRAWING! ============================ */
+		// Listeners
+		BB.canvas.prototype.set_drawing_stage = function()
+		{
+			if (!this.canvas()) {
+				return false;
+			}
+
+			var that = this;
+
+			this.canvas().addEventListener('mousedown', function (event) {
+				that.mousedown( event );
+			})
+
+			this.canvas().addEventListener('mouseup', function (event) {
+				that.mouseup( event );
+			});
+
+			return this;
+
+		}
+
+		BB.canvas.prototype.unset_drawing_stage = function ()
+		{
+			if (!this.canvas()) {
+				return false;
+			}
+			this.canvas().removeEventListener('mousedown');
+			this.canvas().removeEventListener('mouseup');
+
+			return this;
+		}
+
+		BB.canvas.prototype.mousedown = function(event)
+		{
+			if (!this.canvas() || !this.context()) {
+				return false;
+			}
+			this.canvas().data = this.canvas().data || {};
+			if (typeof this.canvas().data.bb != 'undefined') {
+				this.canvas().data.bb = null;
+			}
+			this.canvas().data.bb = this;
+
+			this.set_mousedownX(event.offsetX);
+			this.set_mousedownY(event.offsetY);
+
+			this.set_current_position([ event.offsetX, event.offsetY ]);
+
+			var that = this;
+
+			// this.
+
+			this.canvas().addEventListener('mousemove', that.mousemove);
+
+			return this;
+		}
+
+		BB.canvas.prototype.mousemove = function(event)
+		{
+
+			if (typeof this.data.bb == 'undefined') {
+				// This must exist
+				return false;
+			}
+
+			var that = this.data.bb;
+
+			var x = event.offsetX - that.mousedownX();
+			var y = event.offsetY - that.mousedownY();
+
+			that.set_current_position([ event.offsetX, event.offsetY ]);
+
+			var ctx = that.context();
+
+			if (typeof this.data.rectangle == 'undefined') {
+
+				this.data.rectangle = true;
+				ctx.rect(that.mousedownX(), that.mousedownY(), x, y);
+
+				ctx.stroke();
+			}
+
+			ctx.fillRect(that.mousedownX(), that.mousedownY(), x, y);
+
+			return that;
+		}
+
+
+		BB.canvas.prototype.mouseup = function(event)
+		{
+			if (!this.canvas() || !this.context()) {
+				return false;
+			}
+			var that = this;
+			this.canvas().removeEventListener('mousemove', that.mousemove);
+
+			this.set_mouseupX(event.offsetX);
+			this.set_mouseupY(event.offsetY);
+
+			this.set_current_position([ event.offsetX, event.offsetY ]);
+
+			var that = this;
+
+			// this.
+
+			this.canvas().addEventListener('mousemove', that.mousemove);
+
+			return this;
+		}
+
+
+		// var test = new BB.canvas({ width: 500, height: 500, container: document.getElementById('container'), video : document.getElementById('camera_video'), id : 'Test' })
+		// test.set_drawing_stage();
+		// test.delta();
+
+	</script>
+
+	
+
+</section>
+</body>
+</html>
