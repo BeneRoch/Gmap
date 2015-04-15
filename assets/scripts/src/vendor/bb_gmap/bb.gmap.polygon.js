@@ -88,22 +88,3 @@ BB.gmap.polygon.prototype.display = function()
 
 	return this;
 }
-
-/**
-* Enables or disable draggable
-* @return this (chainable)
-*/
-BB.gmap.polygon.prototype.set_draggable = function(bool)
-{
-	var styles = this.get_styles();
-
-	if (!bool) {
-		styles.draggable = false;
-	} else {
-		styles.draggable = true;
-	}
-
-	this.set_styles(styles);
-	return this;
-
-}

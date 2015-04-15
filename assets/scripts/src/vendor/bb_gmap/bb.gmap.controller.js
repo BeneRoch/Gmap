@@ -48,6 +48,7 @@ BB.gmap.controller = function(container, data)
 {
 	this._MAP;
 	this.__CONTAINER = container;
+	this.__EDITABLE = false;
 
 	this._MARKERS = {};
 	this.__PLACES = {
@@ -376,4 +377,93 @@ BB.gmap.controller.prototype.translate_coords = function(coords) {
 		return ;
 	}
 	return new google.maps.LatLng(coords[0], coords[1]);
+}
+
+
+BB.gmap.controller.prototype.set_editable = function(param)
+{
+	if (!param) {
+
+		var places = this.get_places();
+		var has_editable = false;
+
+		this._loop_all(function( place ) {
+			var _data = place.data();
+			if (_data['editable']) {
+				has_editable = true;
+			}
+		});
+
+		if (!has_editable) {
+			this.__EDITABLE = false;
+			google.maps.event.clearListeners(this.map(), 'click');
+		}
+
+		return this;
+	}
+
+	// No need for more event listeners
+	if (this.__EDITABLE) {
+		return this;
+	}
+
+	this.__EDITABLE = true;
+	var that = this;
+	google.maps.event.addListener(this.map(), 'click', function(event) { that.map_click(event) });
+
+}
+
+/**
+* Listeners for map click
+* This is where everything happen to have a single click event on the map
+* @param event google map event
+* @return this (chainable) 
+*/
+BB.gmap.controller.prototype.map_click = function(event) 
+{
+	// Just in case
+	if (!this.__EDITABLE) {
+		google.maps.event.clearListeners(this.map(), 'click');
+		return false;
+	}
+
+	this._loop_all(function(place) {
+		var _data = place.data();
+		if (_data['editable']) {
+			place.map_click( event );
+		}
+	})
+
+	return this;
+
+}
+
+
+/**
+* Since I manually looped all markers and points, I 
+* made that function to do just that.
+* @param callback function Will receive a place as argument
+* @return this (chainable)
+**/
+BB.gmap.controller.prototype._loop_all = function( callback )
+{
+	if (typeof callback != 'function') {
+		return this;
+	}
+
+	var places = this.get_places();
+	for (var k in places)
+	{
+		var places_by_type = this.get_places_by_type( k );
+
+		if (!this.is_empty_object( places_by_type )) {
+			for (var ident in places_by_type) {
+
+				callback( places_by_type[ ident ] );
+
+			}
+		}
+	}
+
+	return this;
 }

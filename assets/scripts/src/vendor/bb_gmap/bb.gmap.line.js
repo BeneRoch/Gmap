@@ -12,15 +12,13 @@ var BB = BB || {};
 BB.gmap = BB.gmap || {};
 
 /**
-* #Marker object class
+* #Line object class
 * Accepts all datas at first 
-* Needs a google.maps.Marker() object ( data[ 'line' ] ) in order
+* Needs a google.maps.Polyline() object ( data[ 'line' ] ) in order
 * be functionnal with all methods
 *
-* ##Options ( options {} )
-* - `icon`:
-* 	- image `url`
-* 
+* ##Options ( data )
+* styles
 * 
 * ##Methods
 *
@@ -52,16 +50,23 @@ BB.gmap.line.prototype.init = function()
 {
 	var _data = this.data();
 	
+	// Set styles
 	if (typeof _data[ 'styles' ] == 'object') {
 		this.add_styles( _data[ 'styles' ]);
 	}
 
+	// Set paths
 	if (typeof _data[ 'paths' ] == 'object') {
 		this.set_paths( _data[ 'paths' ]);
 	}
 
 	if (this.get_paths() && this.get_styles()) {
 		this.display();
+	}
+
+	// Allow editable from options
+	if (_data[ 'editable' ]) {
+		this.set_editable( _data['editable'] );
 	}
 
 	return this;
@@ -114,14 +119,16 @@ BB.gmap.line.prototype.set_paths = function( paths )
 
 			coords.insertAt( coords.length, push );
 		}
-		console.log(coords);
-
 		paths = coords;
 	}
 
 	this.__PATHS = paths;
 }
 
+/**
+* Return paths
+* @return coord MVCArray paths
+*/
 BB.gmap.line.prototype.get_paths = function()
 {
 	return this.__PATHS;
@@ -223,23 +230,21 @@ BB.gmap.line.prototype.set_map = function( map )
 */
 BB.gmap.line.prototype.add_point = function(path, index)
 {
-
 	// Not good
 	if (typeof path != 'object') {
 		return false;
+	}	
+	// Not good.
+	if ( !(path instanceof google.maps.LatLng) ) {
+		path = this.controller().translate_coords(path)
 	}
-
-	if (typeof path[ 0 ] == 'undefined' || typeof path[ 1 ] == 'undefined') {
+	if ( (!(path instanceof google.maps.LatLng)) && (typeof path[ 0 ] == 'undefined' || typeof path[ 1 ] == 'undefined')) {
 		// Something missing
 		return false;
 	}
 
-	// Not good.
-	if ( !(path[0] instanceof google.maps.LatLng) ) {
-		path = this.controller().translate_coords(path)
-	}
 
-	if (typeof index == 'number') {
+	if (typeof index != 'number') {
 		index = this.get_paths().length;
 	}
 
@@ -253,8 +258,40 @@ BB.gmap.line.prototype.add_point = function(path, index)
 BB.gmap.line.prototype.set_editable = function(param)
 {
 	if (!param) {
-
+		this.set_data({ 'editable' : false });
+		this.controller().set_editable(false);
+		return this;
 	}
 	// Add listeners and stuff
+	this.set_data({ 'editable' : true });
+
+	this.controller().set_editable(true);
+
+	return this;
+
+}
+
+BB.gmap.line.prototype.map_click = function(event)
+{
+	this.add_point(event.latLng);
+}
+
+
+/**
+* Enables or disable draggable
+* @return this (chainable)
+*/
+BB.gmap.line.prototype.set_draggable = function(bool)
+{
+	var styles = this.get_styles();
+
+	if (!bool) {
+		styles.draggable = false;
+	} else {
+		styles.draggable = true;
+	}
+
+	this.set_styles(styles);
+	return this;
 
 }
