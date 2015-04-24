@@ -15,15 +15,15 @@ BB.gmap = BB.gmap || {};
 
 /**
 * #Marker object class
-* Accepts all datas at first 
+* Accepts all datas at first
 * Needs a google.maps.Marker() object ( data[ 'marker' ] ) in order
 * be functionnal with all methods
 *
 * ##Options ( options {} )
 * - `icon`:
 * 	- image `url`
-* 
-* 
+*
+*
 * ##Methods
 *
 *
@@ -56,9 +56,11 @@ BB.gmap.marker.prototype = new BB.base();
 BB.gmap.marker.prototype.init = function()
 {
 	var _data = this.data();
-	
+
 	if (typeof _data['icon'] == 'string') {
 		this.set_image( _data.icon );
+	} else {
+		this.display();
 	}
 
 	this.__ICON;
@@ -101,6 +103,11 @@ BB.gmap.marker.prototype.set_image = function( src )
 		this.data.set_icon( this );
 		this.data.display();
 	}
+
+	img.onerror = function()
+	{
+		this.data.display();
+	}
 	img.src = src;
 
 	return this;
@@ -120,7 +127,12 @@ BB.gmap.marker.prototype.display = function()
 	}
 	var options = {
 		map: this.controller().map(),
-		icon: new google.maps.MarkerImage(
+	   	position: new google.maps.LatLng(_data.coords[0], _data.coords[1]),
+	   	optimized: false
+	}
+
+	if (this.icon().src) {
+		options.icon =  new google.maps.MarkerImage(
 			// image src
 			this.icon().src,
 			// Width, Height.
@@ -130,9 +142,7 @@ BB.gmap.marker.prototype.display = function()
 			// Anchor for this image; X, Y.
 			new google.maps.Point(width, height),
 			new google.maps.Size(width, height)
-	   	),
-	   	position: new google.maps.LatLng(_data.coords[0], _data.coords[1]),
-	   	optimized: false
+	   	)
 	}
 
 	// Mini extend

@@ -4,7 +4,7 @@
  * @author Bene Roch
  * @description
  * Map LINE
- * 
+ *
  */
 
 var BB = BB || {};
@@ -13,13 +13,13 @@ BB.gmap = BB.gmap || {};
 
 /**
 * #Line object class
-* Accepts all datas at first 
+* Accepts all datas at first
 * Needs a google.maps.Polyline() object ( data[ 'line' ] ) in order
 * be functionnal with all methods
 *
 * ##Options ( data )
 * styles
-* 
+*
 * ##Methods
 *
 *
@@ -49,7 +49,7 @@ BB.gmap.line.prototype = new BB.base();
 BB.gmap.line.prototype.init = function()
 {
 	var _data = this.data();
-	
+
 	// Set styles
 	if (typeof _data[ 'styles' ] == 'object') {
 		this.add_styles( _data[ 'styles' ]);
@@ -93,7 +93,7 @@ BB.gmap.line.prototype.set_styles = function( styles )
 	return this;
 }
 
-BB.gmap.line.prototype.get_styles = function() 
+BB.gmap.line.prototype.get_styles = function()
 {
 	return this.__STYLES;
 }
@@ -233,10 +233,10 @@ BB.gmap.line.prototype.add_point = function(path, index)
 	// Not good
 	if (typeof path != 'object') {
 		return false;
-	}	
+	}
 	// Not good.
 	if ( !(path instanceof google.maps.LatLng) ) {
-		path = this.controller().translate_coords(path)
+		path = this.controller().translate_coords(path);
 	}
 	if ( (!(path instanceof google.maps.LatLng)) && (typeof path[ 0 ] == 'undefined' || typeof path[ 1 ] == 'undefined')) {
 		// Something missing
