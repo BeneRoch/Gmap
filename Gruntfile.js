@@ -8,12 +8,7 @@ module.exports = function(grunt) {
 		concat: {
 			global: {
 				src: [
-					'assets/scripts/src/vendor/bb_gmap/bb.data.js',
-					'assets/scripts/src/vendor/bb_gmap/bb.base.js',
-					'assets/scripts/src/vendor/bb_gmap/bb.gmap.controller.js',
-					'assets/scripts/src/vendor/bb_gmap/bb.gmap.marker.js',
-					'assets/scripts/src/vendor/bb_gmap/bb.gmap.line.js',
-					'assets/scripts/src/vendor/bb_gmap/bb.gmap.polygon.js'
+					'assets/scripts/src/vendor/bb_gmap/*.js'
 				],
       			dest: 'assets/scripts/dist/bb.gmap.min.js'
 			}
