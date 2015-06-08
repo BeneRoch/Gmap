@@ -18,7 +18,17 @@ BB.gmap = BB.gmap || {};
 * be functionnal with all methods
 *
 * ##Options ( data )
-* styles
+*
+* - type ( line // polygon )
+*
+* - styles
+* 	- strokeColor
+* 	- strokeOpacity
+* 	- strokeWeight
+* 	- fillColor
+* 	- fillOpacity
+*
+* - editable (makes map drawable)
 *
 * ##Methods
 *
@@ -30,7 +40,13 @@ BB.gmap.line = function( data, controller )
 	this.__OBJECT = undefined;
 	this.__STYLES;
 	this.__PATHS;
+
+	// One marker per point to make it editable
+	this.__MARKERS;
+
 	this.__CONTROLLER = controller;
+
+	this.__MARKERS = {};
 
 	// Set data
 	this.set_data( data );
@@ -58,6 +74,10 @@ BB.gmap.line.prototype.init = function()
 	// Set paths
 	if (typeof _data[ 'paths' ] == 'object') {
 		this.set_paths( _data[ 'paths' ]);
+	} else {
+		// Default = Empty array
+		// Makes it possible to DRAW a new line or polygon
+		this.set_paths( [] );
 	}
 
 	if (this.get_paths() && this.get_styles()) {
@@ -121,7 +141,6 @@ BB.gmap.line.prototype.set_paths = function( paths )
 		}
 		paths = coords;
 	}
-
 	this.__PATHS = paths;
 }
 
@@ -134,7 +153,6 @@ BB.gmap.line.prototype.get_paths = function()
 	return this.__PATHS;
 }
 
-
 BB.gmap.line.prototype.display = function()
 {
 	var _data = this.data();
@@ -145,6 +163,7 @@ BB.gmap.line.prototype.display = function()
 	}
 
 	var paths = this.get_paths();
+
 	if (typeof paths == 'undefined') {
 		this.error('Undefined paths at BB.gmap.line.display : ' + paths);
 	}
@@ -242,15 +261,80 @@ BB.gmap.line.prototype.add_point = function(path, index)
 		// Something missing
 		return false;
 	}
+	// Scope
+	var that = this;
+
+
+	var paths = this.get_paths();
+
+	// Allows to have empty path polygon
+	// Allows to CREATE a new polygon
+	if (typeof paths == 'undefined') {
+		this.set_paths( [ [ path.lat(), path.lng() ] ] );
+	}
+	paths = this.get_paths();
 
 
 	if (typeof index != 'number') {
-		index = this.get_paths().length;
+		index = paths.length;
 	}
 
-	this.get_paths().insertAt(index, path);
+	paths.insertAt(index, path);
+
+
+	// Add marker on top of it
+	var marker = new BB.gmap.marker({
+		coords : [ path.lat(), path.lng() ],
+		draggable: true,
+		ondragend : function(event) {
+			console.log(this);
+			console.log(event);
+			that.move_point( this.index, [ event.latLng.lat(), event.latLng.lng() ] );
+		},
+		index: index
+	}, that.controller());
+
 	return this;
 }
+
+/**
+* When dragging a marker to change the point
+* or whatever concerning the moving of a single point on
+* a polygon
+*
+* @param {Integer} index Index of the 'point'
+* @param {Object} path Coordinates of the new emplacement
+* @return this || false
+*/
+BB.gmap.line.prototype.move_point = function( index, path )
+{
+	var paths = this.get_paths();
+	if (typeof paths != 'object') {
+		// How can you move something inexistant?
+		this.error('You can not move a point when no path is given at BB.gmap.line.move_point( index, path )');
+		return false;
+	}
+	if (!path) {
+		this.error('Required arguments index:integer and path:object at BB.gmap.line.move_point( index, path )');
+		return false;
+	}
+
+	// Not good.
+	if ( !(path instanceof google.maps.LatLng) ) {
+		path = this.controller().translate_coords(path);
+	}
+	if ( (!(path instanceof google.maps.LatLng)) && (typeof path[ 0 ] == 'undefined' || typeof path[ 1 ] == 'undefined')) {
+		// Something missing
+		return false;
+	}
+	// Scope
+	var that = this;
+
+	paths.setAt(index, path);
+
+	return this;
+}
+
 
 /**
 * @param boolean
@@ -262,6 +346,9 @@ BB.gmap.line.prototype.set_editable = function(param)
 		this.controller().set_editable(false);
 		return this;
 	}
+
+
+
 	// Add listeners and stuff
 	this.set_data({ 'editable' : true });
 

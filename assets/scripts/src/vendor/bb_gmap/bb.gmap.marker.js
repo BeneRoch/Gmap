@@ -51,15 +51,25 @@ BB.gmap.marker = function( data, controller )
 	return this;
 }
 
+/**
+*
+*/
 BB.gmap.marker.prototype = new BB.base();
 
+/**
+*
+*/
 BB.gmap.marker.prototype.init = function()
 {
 	var _data = this.data();
 
+
 	if (typeof _data['icon'] == 'string') {
+		// No display called afterward
+		// @see set_image() -> display() called after the image load.
 		this.set_image( _data.icon );
 	} else {
+		// No image load, no need to wait.
 		this.display();
 	}
 
@@ -68,6 +78,9 @@ BB.gmap.marker.prototype.init = function()
 	return this;
 }
 
+/**
+*
+*/
 BB.gmap.marker.prototype.icon = function()
 {
 	if (!this.__ICON) {
@@ -77,7 +90,11 @@ BB.gmap.marker.prototype.icon = function()
 	return this.__ICON;
 }
 
-
+/**
+* Sets the icon for the marker
+* Each marker can have a different icon
+* @return this (chainable)
+*/
 BB.gmap.marker.prototype.set_icon = function( icon )
 {
 	if (typeof icon != 'object') {
@@ -89,9 +106,11 @@ BB.gmap.marker.prototype.set_icon = function( icon )
 	return this;
 }
 
-
-
-
+/**
+* Sets the image for the icon, preloads it
+* Calls the this.set_icon() function after loading
+* @return this (chainable)
+*/
 BB.gmap.marker.prototype.set_image = function( src )
 {
 	var img = new Image();
@@ -106,6 +125,8 @@ BB.gmap.marker.prototype.set_image = function( src )
 
 	img.onerror = function()
 	{
+		// Icon didn't work, treat it as if there's just no icon
+		this.data.set_data({ 'icon' : undefined });
 		this.data.display();
 	}
 	img.src = src;
@@ -113,6 +134,10 @@ BB.gmap.marker.prototype.set_image = function( src )
 	return this;
 }
 
+/**
+*
+*
+*/
 BB.gmap.marker.prototype.display = function()
 {
 	// if ()
@@ -130,6 +155,8 @@ BB.gmap.marker.prototype.display = function()
 	   	position: new google.maps.LatLng(_data.coords[0], _data.coords[1]),
 	   	optimized: false
 	}
+
+	options = this.extend(options, _data);
 
 	if (this.icon().src) {
 		options.icon =  new google.maps.MarkerImage(
@@ -151,9 +178,6 @@ BB.gmap.marker.prototype.display = function()
 		options[ k ] = custom_options[ k ];
 	}
 
-	// console.log(custom_options);
-	// console.log(options);
-
 	if (typeof this.marker() != 'undefined') {
 		this.marker().setOptions(options);
 	} else {
@@ -161,9 +185,15 @@ BB.gmap.marker.prototype.display = function()
 		this.set_marker( marker );
 	}
 
+	this.listeners();
+
 	return this;
 }
 
+/**
+* show the marker
+* @return this (chainable)
+*/
 BB.gmap.marker.prototype.show = function()
 {
 	var _marker = this.marker();
@@ -171,8 +201,14 @@ BB.gmap.marker.prototype.show = function()
 		this.error('No marker defined at BB.gmap.marker.show()')
 	}
 	marker.setMap(this.controller().map());
+
+	return this;
 }
 
+/**
+* Hide the marker
+* @return this (chainable)
+*/
 BB.gmap.marker.prototype.hide = function()
 {
 	var _marker = this.marker();
@@ -180,9 +216,13 @@ BB.gmap.marker.prototype.hide = function()
 		this.error('No marker defined at BB.gmap.marker.hide()')
 	}
 	_marker.setMap(null);
+
+	return this;
 }
 
-
+/**
+* @return BB.gmap.controller
+*/
 BB.gmap.marker.prototype.controller = function()
 {
 	return this.__CONTROLLER;
@@ -215,13 +255,6 @@ BB.gmap.marker.prototype.marker = function()
 	return this.__MARKER;
 }
 
-BB.gmap.marker.prototype.refresh = function()
-{
-	var opts = this.data('_opts');
-	var marker = this.marker();
-	marker.setOptions(opts);
-}
-
 /**
 * Requires either google map object
 *
@@ -232,3 +265,45 @@ BB.gmap.marker.prototype.set_map = function( map )
 
 	return this;
 }
+
+/**
+* Sets or remove listeners according to plan and / but mainly options.
+*
+*/
+BB.gmap.marker.prototype.listeners = function()
+{
+	// Scope
+	var that = this;
+
+	// Marker
+	var marker = this.marker();
+
+	marker.bbmarker = this;
+
+	if (this.data( 'draggable' )) {
+		google.maps.event.addListener(marker, 'dragend', that.dragend);
+	}
+}
+
+BB.gmap.marker.prototype.dragend = function(event)
+{
+	// Scope
+	var that = this.bbmarker;
+
+	var _data = that.data();
+
+	if (typeof _data[ 'ondragend' ] == 'function') {
+		_data.ondragend( event );
+	}
+
+}
+
+/**
+* @remove ?
+*/
+// BB.gmap.marker.prototype.refresh = function()
+// {
+// 	var opts = this.data('_opts');
+// 	var marker = this.marker();
+// 	marker.setOptions(opts);
+// }

@@ -66,7 +66,7 @@ BB.base.prototype.remove_data = function(data)
 };
 
 /**
-* 
+*
 * @return {mixed} data | {Object} data  || {Mixed} data[ key ]
 */
 BB.base.prototype.get_data = function(key)
@@ -102,7 +102,7 @@ BB.base.prototype.sanitize = function()
 * Prevents output errors
 * @param data 		|		{Object} 		|
 * @return {Object} data
-*/ 
+*/
 BB.base.prototype._escape_data = function(data) {
 	var that = this;
 
@@ -138,7 +138,7 @@ BB.base.prototype._escape_data = function(data) {
 * Prevents output errors
 * @param data 		|		{Object} 		|
 * @return {Object} data
-*/ 
+*/
 BB.base.prototype._unescape_data = function(data) {
 	var that = this;
 
@@ -214,9 +214,18 @@ BB.base.prototype.error = function( error_msg )
 	return this;
 };
 
-
+/**
+* Utils
+* Check if object is empty
+* @param obj Object
+* @return boolean
+*/
 BB.base.prototype.is_empty_object = function( obj )
 {
+	if (typeof obj != 'object') {
+		this.error('Invalid argument, Object expected at BB.base.is_empty_object()');
+		return true;
+	}
 	for(var prop in obj) {
 		if(obj.hasOwnProperty(prop)) {
 			return false;
@@ -225,3 +234,26 @@ BB.base.prototype.is_empty_object = function( obj )
 
 	return true;
 }
+
+/**
+ * Merge defaults with user options
+ * @private
+ * @param {Object} defaults Default settings
+ * @param {Object} options User options
+ * @returns {Object} Merged values of defaults and options
+ */
+BB.base.prototype.extend = function ( defaults, options ) {
+    var extended = {};
+    var prop;
+    for (prop in defaults) {
+        if (Object.prototype.hasOwnProperty.call(defaults, prop)) {
+            extended[prop] = defaults[prop];
+        }
+    }
+    for (prop in options) {
+        if (Object.prototype.hasOwnProperty.call(options, prop)) {
+            extended[prop] = options[prop];
+        }
+    }
+    return extended;
+};
