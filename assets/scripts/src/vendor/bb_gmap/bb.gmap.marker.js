@@ -283,8 +283,23 @@ BB.gmap.marker.prototype.listeners = function()
 	if (this.data( 'draggable' )) {
 		google.maps.event.addListener(marker, 'dragend', that.dragend);
 	}
+
+	// click listeners
+	// No condition, which is different to the dragend option
+	// We might always use the click event, I see no reason to make
+	// it optional. Options will occur in the event handler.
+	google.maps.event.addListener(marker, 'click', that.onclick);
+
+
 }
 
+/**
+* Event handler
+* Dragend event handler. Calls the callback if it exists
+*
+* this = marker object
+* @param {Event} event
+*/
 BB.gmap.marker.prototype.dragend = function(event)
 {
 	// Scope
@@ -297,6 +312,74 @@ BB.gmap.marker.prototype.dragend = function(event)
 	}
 
 }
+
+/**
+* Event handler
+* Click event handler. Calls the callback if it exists
+* Used to store the index of the current marker
+*
+* this = marker object
+* @param {Event} event
+*/
+BB.gmap.marker.prototype.onclick = function(event)
+{
+	// Scope
+	var that = this.bbmarker;
+
+	var _data = that.data();
+
+
+	if (typeof _data[ 'onclick' ] == 'function') {
+		_data.onclick( event );
+	}
+
+	that.focus();
+
+}
+
+/**
+*
+*marker-selected.png
+*/
+BB.gmap.marker.prototype.focus = function()
+{
+	// Scope
+	var that = this;
+
+	// Data
+	var _data = this.data();
+
+	var focused = that.controller().focused();
+
+	if (focused) {
+		focused.blur();
+	}
+
+	// Selected icon
+	if (_data[ 'icon_selected' ]) {
+		this.set_image( _data[ 'icon_selected' ] );
+	}
+
+	that.controller().set_focus( that );
+
+}
+
+BB.gmap.marker.prototype.blur = function()
+{
+	// Scope
+	var that = this;
+
+	// Data
+	var _data = this.data();
+
+	// Selected icon
+	if (_data[ 'icon_selected' ]) {
+		// No need to put back the icon if there's not selected icon specified.
+		this.set_image( _data[ 'icon' ] );
+	}
+}
+
+
 
 /**
 * @remove ?

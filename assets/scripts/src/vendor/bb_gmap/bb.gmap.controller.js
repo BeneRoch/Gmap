@@ -46,16 +46,31 @@ BB.gmap = BB.gmap || {};
 */
 BB.gmap.controller = function(container, data)
 {
+	// Keep the map in sight
 	this._MAP;
+
+	// DOM Element where is applied the actual map
 	this.__CONTAINER = container;
+
+	// Editable makes the controller listen for events
+	// such as click, mouseover, etc and dispatch that
+	// event to every children in 'places'
 	this.__EDITABLE = false;
 
+	// obsolete ?
 	this._MARKERS = {};
+
+	// all places are stucked there
+	// this allows a quick research by ident
 	this.__PLACES = {
 		markers : {},
 		polygons 	: {},
 		lines 	: {}
 	};
+
+	// Focused item
+	// could be line, marker, polygon, polygon vertex, whatever.
+	this.__FOCUSED_ITEM;
 
 	this.set_data(data);
 
@@ -71,7 +86,7 @@ BB.gmap.controller.prototype.map = function()
 {
 	if (!this._MAP) {
 		// No map yet
-		this.error('No map associated to the current controller')
+		this.error('No map associated to the current controller at BB.gmap.controller.map()')
 		return;
 	}
 	return this._MAP;
@@ -151,7 +166,7 @@ BB.gmap.controller.prototype.set_styles = function ( styles ) {
 * }
 *
 */
-BB.gmap.controller.prototype.add_places = function( places ) 
+BB.gmap.controller.prototype.add_places = function( places )
 {
 	if (!places) {
 		this.error('Invalid places specified :' + places)
@@ -266,7 +281,7 @@ BB.gmap.controller.prototype.get_marker = function( ident )
 	return _markers[ ident ];
 }
 
-BB.gmap.controller.prototype.add_place_by_address = function( ident, address, data ) 
+BB.gmap.controller.prototype.add_place_by_address = function( ident, address, data )
 {
 	var that = this;
 	this.geocode_address( address, function(coords) {
@@ -276,7 +291,7 @@ BB.gmap.controller.prototype.add_place_by_address = function( ident, address, da
 }
 
 
-BB.gmap.controller.prototype.geocode_address = function( address, callback ) 
+BB.gmap.controller.prototype.geocode_address = function( address, callback )
 {
 	var ret = Array();
 
@@ -284,15 +299,15 @@ BB.gmap.controller.prototype.geocode_address = function( address, callback )
 
 		var geocoder = new google.maps.Geocoder();
 
-		geocoder.geocode({ 
-			'address': address 
-		}, 
+		geocoder.geocode({
+			'address': address
+		},
 		function(results, status) {
 
 		  if (status == google.maps.GeocoderStatus.OK) {
 			var lat = results[0].geometry.location.lat();
 			var lon = results[0].geometry.location.lng();
-			
+
 			if (typeof callback == 'function') {
 				callback( [lat, lon ] );
 			}
@@ -335,8 +350,26 @@ BB.gmap.controller.prototype.get_place = function( ident )
 	return place;
 }
 
+/**
+*
+*
+*/
+BB.gmap.controller.prototype.set_focus = function( item )
+{
+	var _data = item.data();
 
+	var type = _data[ 'type' ];
 
+	this.__FOCUSED_ITEM = item;
+}
+
+/**
+* Retrieve focus Item, then change it.
+*/
+BB.gmap.controller.prototype.focused = function()
+{
+	return this.__FOCUSED_ITEM;
+}
 
 BB.gmap.controller.prototype.add_clusterer = function()
 {
@@ -347,7 +380,7 @@ BB.gmap.controller.prototype.get_clusterer = function()
 
 }
 
-BB.gmap.controller.prototype.filter = function( filters ) 
+BB.gmap.controller.prototype.filter = function( filters )
 {
 
 }
@@ -417,9 +450,9 @@ BB.gmap.controller.prototype.set_editable = function(param)
 * Listeners for map click
 * This is where everything happen to have a single click event on the map
 * @param event google map event
-* @return this (chainable) 
+* @return this (chainable)
 */
-BB.gmap.controller.prototype.map_click = function(event) 
+BB.gmap.controller.prototype.map_click = function(event)
 {
 	// Just in case
 	if (!this.__EDITABLE) {
@@ -439,8 +472,9 @@ BB.gmap.controller.prototype.map_click = function(event)
 }
 
 
+
 /**
-* Since I manually looped all markers and points, I 
+* Since I manually looped all markers and points, I
 * made that function to do just that.
 * @param callback function Will receive a place as argument
 * @return this (chainable)

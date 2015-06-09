@@ -62,6 +62,9 @@ BB.gmap.line = function( data, controller )
 
 BB.gmap.line.prototype = new BB.base();
 
+/**
+*
+*/
 BB.gmap.line.prototype.init = function()
 {
 	var _data = this.data();
@@ -71,14 +74,19 @@ BB.gmap.line.prototype.init = function()
 		this.add_styles( _data[ 'styles' ]);
 	}
 
+	// Default = Empty array
+	// Makes it possible to DRAW a new line or polygon
+	this.set_paths( [] );
+
 	// Set paths
 	if (typeof _data[ 'paths' ] == 'object') {
-		this.set_paths( _data[ 'paths' ]);
-	} else {
-		// Default = Empty array
-		// Makes it possible to DRAW a new line or polygon
-		this.set_paths( [] );
+		var i = 0;
+		var total = _data[ 'paths' ].length;
+		for (; i<total; i++) {
+			this.add_point( _data[ 'paths' ][ i ] );
+		}
 	}
+
 
 	if (this.get_paths() && this.get_styles()) {
 		this.display();
@@ -91,6 +99,37 @@ BB.gmap.line.prototype.init = function()
 
 	return this;
 }
+
+/**
+* Pretty much the same as init, but removing all markers associated
+* and all listeners to get a fresh start.
+*
+*/
+BB.gmap.line.prototype.redraw = function()
+{
+	// Scope
+	var that = this;
+
+	// Paths
+	var paths = this.get_paths();
+	var i = 0;
+	var total = paths.length;
+
+	var new_paths = [];
+
+	for (; i<total; i++) {
+		new_paths.push([ paths.getAt( i ).lat(), paths.getAt( i ).lng() ]);
+
+		if (typeof this.__MARKERS[ i ] != 'undefined') {
+			this.__MARKERS[ i ].hide();
+		}
+	}
+
+	this.set_data({ paths : new_paths });
+	this.init();
+}
+
+
 
 /**
 * Getter & setters
@@ -287,12 +326,15 @@ BB.gmap.line.prototype.add_point = function(path, index)
 		coords : [ path.lat(), path.lng() ],
 		draggable: true,
 		ondragend : function(event) {
-			console.log(this);
-			console.log(event);
 			that.move_point( this.index, [ event.latLng.lat(), event.latLng.lng() ] );
 		},
 		index: index
 	}, that.controller());
+
+	if (!this.__MARKERS) {
+		this.__MARKERS = [];
+	}
+	this.__MARKERS[ index ] = marker;
 
 	return this;
 }
@@ -308,6 +350,7 @@ BB.gmap.line.prototype.add_point = function(path, index)
 */
 BB.gmap.line.prototype.move_point = function( index, path )
 {
+	console.log(index, 'move point index');
 	var paths = this.get_paths();
 	if (typeof paths != 'object') {
 		// How can you move something inexistant?
@@ -330,7 +373,39 @@ BB.gmap.line.prototype.move_point = function( index, path )
 	// Scope
 	var that = this;
 
-	paths.setAt(index, path);
+	paths.setAt( index, path );
+
+	return this;
+}
+
+/**
+* Remove one point from the polygon
+* @param {Integer} Index
+* @return this (chainable)
+*/
+BB.gmap.line.prototype.remove_point = function( index )
+{
+	var paths = this.get_paths();
+	if (typeof paths != 'object') {
+		// How can you move something inexistant?
+		this.error('You can not move a point when no path is given at BB.gmap.line.move_point( index, path )');
+		return false;
+	}
+
+	// Remove that paths.
+	paths.removeAt( index );
+
+	if (typeof this.__MARKERS[ index ] != 'undefined') {
+		this.__MARKERS[ index ].hide();
+		this.__MARKERS.splice( index, 1 );
+	}
+
+	var _m = this.__MARKERS;
+	for (var i in _m) {
+		_m[ i ].marker().index = parseInt( i );
+	}
+
+	this.redraw();
 
 	return this;
 }
