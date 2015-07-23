@@ -311,6 +311,7 @@ BB.gmap.marker.prototype.dragend = function(event)
 		_data.ondragend( event );
 	}
 
+	that.focus();
 }
 
 /**
@@ -327,7 +328,6 @@ BB.gmap.marker.prototype.onclick = function(event)
 	var that = this.bbmarker;
 
 	var _data = that.data();
-
 
 	if (typeof _data[ 'onclick' ] == 'function') {
 		_data.onclick( event );
@@ -348,12 +348,6 @@ BB.gmap.marker.prototype.focus = function()
 
 	// Data
 	var _data = this.data();
-
-	var focused = that.controller().focused();
-
-	if (focused) {
-		focused.blur();
-	}
 
 	// Selected icon
 	if (_data[ 'icon_selected' ]) {

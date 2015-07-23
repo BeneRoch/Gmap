@@ -4,6 +4,7 @@
 <div id="test" class="test" style="border: 1px solid blue; width: 100%; height: 100%; background: red;">
 
 </div>
+<div id="agna" style="width: 500px; height:500px; border: 2px solid blue;"></div>
 </body>
 
 
@@ -25,21 +26,37 @@
 			places :{
 				test : {
 					type : 'marker',
-		            icon : 'http://localhost/Gmap/assets/images/marker.png',
-					coords : [ 45.577997,-73.76850009999998 ]
+		            icon : 'assets/images/marker.png',
+					coords : [ 45.577997,-73.76850009999998 ],
+					draggable: true
 				},
 				polygon : {
 					type : 'polygon',
-					// paths: [
-					// ],
+					paths: [
+						[37.772323, -122.214897],
+						[21.291982, -157.821856],
+						[-18.142599, 178.431]
+					],
+					onmouseover: function(object, event) {
+
+					},
 					styles : {
 					    strokeColor: '#99cc00',
 					    strokeOpacity: 0.8,
 					    strokeWeight: 3,
 					    fillColor: '#FF0000',
-					    fillOpacity: 0.35
-					},
-					editable: true
+					    fillOpacity: 0.35,
+						hover : {
+						    strokeColor: '#ffffff',
+						    strokeOpacity: 0.8,
+						    strokeWeight: 3,
+						    fillColor: '#000000',
+						    fillOpacity: 1
+						},
+						focused : {
+						    fillOpacity: 1
+						}
+					}
 				}
 			}
 		})
@@ -47,7 +64,8 @@
 
 		map.add_place_by_address('test_un_autre', '1859 iberville, montréal, qc, h2k3c4', {
 			type : 'marker',
-		    icon : 'http://localhost/test/assets/images/marker.png'
+		    icon : 'assets/images/marker-tri.png',
+		    icon_selected : 'assets/images/marker-tri-selected.png'
 		})
 	}
 </script>
@@ -55,5 +73,6 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 <script src="http://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=fr&callback=initialize"></script>
 
+<!-- <script src="assets/scripts/dist/gmap.min.js"></script> -->
 <script src="assets/scripts/dist/bb.gmap.min.js"></script>
 </html>

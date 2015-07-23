@@ -138,6 +138,10 @@ BB.gmap.controller.prototype.init = function()
 		return this;
 	}
 	this.add_places( _data[ 'places' ] )
+
+	// Add listeners (map click)
+	this.listeners();
+
 	return this;
 }
 
@@ -350,6 +354,17 @@ BB.gmap.controller.prototype.get_place = function( ident )
 	return place;
 }
 
+BB.gmap.controller.prototype.remove_focus = function()
+{
+	var focused = this.focused();
+	if (focused) {
+		focused.blur();
+		this.__FOCUSED_ITEM = undefined;
+	}
+
+	return this;
+}
+
 /**
 *
 *
@@ -358,7 +373,10 @@ BB.gmap.controller.prototype.set_focus = function( item )
 {
 	var _data = item.data();
 
-	var type = _data[ 'type' ];
+	var focused = this.focused();
+	if (focused && (focused != item)) {
+		focused.blur();
+	}
 
 	this.__FOCUSED_ITEM = item;
 }
@@ -412,39 +430,19 @@ BB.gmap.controller.prototype.translate_coords = function(coords) {
 	return new google.maps.LatLng(coords[0], coords[1]);
 }
 
-
-BB.gmap.controller.prototype.set_editable = function(param)
+/**
+*
+*/
+BB.gmap.controller.prototype.listeners = function()
 {
-	if (!param) {
-
-		var places = this.get_places();
-		var has_editable = false;
-
-		this._loop_all(function( place ) {
-			var _data = place.data();
-			if (_data['editable']) {
-				has_editable = true;
-			}
-		});
-
-		if (!has_editable) {
-			this.__EDITABLE = false;
-			google.maps.event.clearListeners(this.map(), 'click');
-		}
-
-		return this;
-	}
-
-	// No need for more event listeners
-	if (this.__EDITABLE) {
-		return this;
-	}
-
-	this.__EDITABLE = true;
+	google.maps.event.clearListeners(this.map(), 'click');
 	var that = this;
 	google.maps.event.addListener(this.map(), 'click', function(event) { that.map_click(event) });
 
+	return this;
 }
+
+
 
 /**
 * Listeners for map click
@@ -454,18 +452,18 @@ BB.gmap.controller.prototype.set_editable = function(param)
 */
 BB.gmap.controller.prototype.map_click = function(event)
 {
-	// Just in case
-	if (!this.__EDITABLE) {
-		google.maps.event.clearListeners(this.map(), 'click');
-		return false;
+	// Focused item on the map (if any)
+	var focused = this.focused();
+
+	if (!focused) {
+		return this;
 	}
 
-	this._loop_all(function(place) {
-		var _data = place.data();
-		if (_data['editable']) {
-			place.map_click( event );
-		}
-	})
+	if (focused.data('editable')) {
+		focused.map_click( event );
+	} else {
+		this.remove_focus();
+	}
 
 	return this;
 

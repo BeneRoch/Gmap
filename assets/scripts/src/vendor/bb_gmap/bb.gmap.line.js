@@ -97,6 +97,7 @@ BB.gmap.line.prototype.init = function()
 		this.set_editable( _data['editable'] );
 	}
 
+	this.listeners();
 	return this;
 }
 
@@ -218,6 +219,7 @@ BB.gmap.line.prototype.display = function()
 
 	this.set_map(this.controller().map());
 
+
 	return this;
 }
 
@@ -320,21 +322,22 @@ BB.gmap.line.prototype.add_point = function(path, index)
 
 	paths.insertAt(index, path);
 
+	if (that.data('editable')) {
+		// Add marker on top of it
+		var marker = new BB.gmap.marker({
+			coords : [ path.lat(), path.lng() ],
+			draggable: that.data('editable'),
+			ondragend : function(event) {
+				that.move_point( this.index, [ event.latLng.lat(), event.latLng.lng() ] );
+			},
+			index: index
+		}, that.controller());
 
-	// Add marker on top of it
-	var marker = new BB.gmap.marker({
-		coords : [ path.lat(), path.lng() ],
-		draggable: true,
-		ondragend : function(event) {
-			that.move_point( this.index, [ event.latLng.lat(), event.latLng.lng() ] );
-		},
-		index: index
-	}, that.controller());
-
-	if (!this.__MARKERS) {
-		this.__MARKERS = [];
+		if (!this.__MARKERS) {
+			this.__MARKERS = [];
+		}
+		this.__MARKERS[ index ] = marker;
 	}
-	this.__MARKERS[ index ] = marker;
 
 	return this;
 }
@@ -350,7 +353,6 @@ BB.gmap.line.prototype.add_point = function(path, index)
 */
 BB.gmap.line.prototype.move_point = function( index, path )
 {
-	console.log(index, 'move point index');
 	var paths = this.get_paths();
 	if (typeof paths != 'object') {
 		// How can you move something inexistant?
@@ -418,16 +420,12 @@ BB.gmap.line.prototype.set_editable = function(param)
 {
 	if (!param) {
 		this.set_data({ 'editable' : false });
-		this.controller().set_editable(false);
+		// this.controller().set_editable(false);
 		return this;
 	}
 
-
-
 	// Add listeners and stuff
 	this.set_data({ 'editable' : true });
-
-	this.controller().set_editable(true);
 
 	return this;
 
@@ -456,4 +454,139 @@ BB.gmap.line.prototype.set_draggable = function(bool)
 	this.set_styles(styles);
 	return this;
 
+}
+
+
+
+BB.gmap.line.prototype.listeners = function()
+{
+	// Scope
+	var that = this;
+	that.object().bbobject = that;
+
+	google.maps.event.clearListeners( that.object(), 'mouseover' );
+	google.maps.event.clearListeners( that.object(), 'mouseout' );
+	google.maps.event.clearListeners( that.object(), 'click' );
+
+	google.maps.event.addListener( that.object(), 'mouseover', that.mouse_over );
+	google.maps.event.addListener( that.object(), 'mouseout', that.mouse_out );
+	google.maps.event.addListener( that.object(), 'click', that.click );
+}
+
+/**
+* `this` is NOT a BB.gmap.line object
+* @see this.listeners()
+* @param event
+*/
+BB.gmap.line.prototype.mouse_over = function( event )
+{
+	var that = this.bbobject;
+	var _data = that.data();
+
+	console.log(_data[ 'onmouseover' ]);
+
+	if (typeof _data[ 'onmouseover' ] == 'function') {
+		_data.onmouseover( event );
+	}
+
+	var styles = that.get_styles();
+	// Use hover styles
+	if (typeof styles.hover == 'object') {
+		that.set_styles( styles.hover );
+	}
+}
+
+/**
+* `this` is NOT a BB.gmap.line object
+* @see this.listeners()
+* @param event
+*/
+BB.gmap.line.prototype.mouse_out = function( event )
+{
+	var that = this.bbobject;
+
+	var _data = that.data();
+
+	if (typeof _data[ 'onmouseout' ] == 'function') {
+		_data.onmouseout( that, event );
+	}
+
+	var focused = that.controller().focused();
+	if (focused == that) {
+		return false;
+	}
+	// Go back to original state
+	that.set_styles( that.get_data('styles') );
+}
+
+
+/**
+* `this` is NOT a BB.gmap.line object
+* @see this.listeners()
+* @param event
+*/
+BB.gmap.line.prototype.mouse_down = function( event )
+{
+	var that = this.bbobject;
+	// Go back to original state
+	// that.set_styles( that.get_data('styles') );
+}
+
+
+/**
+* `this` is NOT a BB.gmap.line object
+* @see this.listeners()
+* @param event
+*/
+BB.gmap.line.prototype.mouse_up = function( event )
+{
+	var that = this.bbobject;
+	// Go back to original state
+	// that.set_styles( that.get_data('styles') );
+}
+
+/**
+* `this` is NOT a BB.gmap.line object
+* @see this.listeners()
+* @param event
+*/
+BB.gmap.line.prototype.click = function( event )
+{
+	// Scope
+	var that = this.bbobject;
+	var _data = that.data();
+
+	if (typeof _data[ 'onclick' ] == 'function') {
+		_data.onclick( event );
+	}
+
+	that.focus();
+
+}
+
+/**
+* Set focus on the current item, tell so to the controller
+* @return this (chainable)
+*/
+BB.gmap.line.prototype.focus = function()
+{
+	var styles = this.get_data('styles');
+
+	if (typeof styles.focused == 'object') {
+		this.set_styles( styles.focused );
+	}
+	this.controller().set_focus( this );
+
+	return this;
+}
+
+/**
+* Go to the original state of the object
+* @return this (chainable)
+*/
+BB.gmap.line.prototype.blur = function()
+{
+	this.set_styles( this.get_data('styles') );
+
+	return this;
 }

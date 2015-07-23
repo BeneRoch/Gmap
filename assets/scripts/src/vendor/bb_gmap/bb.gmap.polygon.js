@@ -4,7 +4,7 @@
  * @author Bene Roch
  * @description
  * Map LINE
- * 
+ *
  */
 
 var BB = BB || {};
@@ -13,15 +13,15 @@ BB.gmap = BB.gmap || {};
 
 /**
 * #Marker object class
-* Accepts all datas at first 
+* Accepts all datas at first
 * Needs a google.maps.Marker() object ( data[ 'polygon' ] ) in order
 * be functionnal with all methods
 *
 * ##Options ( options {} )
 * - `icon`:
 * 	- image `url`
-* 
-* 
+*
+*
 * ##Methods
 *
 *
@@ -71,10 +71,6 @@ BB.gmap.polygon.prototype.display = function()
 	}
 
 
-	// styles.paths = paths;
-
-
-
 	if (typeof this.object() != 'undefined') {
 		this.object().setOptions(styles);
 	} else {
@@ -85,6 +81,8 @@ BB.gmap.polygon.prototype.display = function()
 	this.object().setPaths( new google.maps.MVCArray([paths]) );
 
 	this.set_map(this.controller().map());
+
+	this.listeners();
 
 	return this;
 }
