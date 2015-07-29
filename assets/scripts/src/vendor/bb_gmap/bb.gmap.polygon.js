@@ -31,8 +31,8 @@ BB.gmap.polygon = function( data, controller )
 {
 	// Contains the google map object
 	this.__OBJECT = undefined;
-	this.__STYLES;
-	this.__PATHS;
+	this.__STYLES = undefined;
+	this.__PATHS = undefined;
 	this.__CONTROLLER = controller;
 
 	// Set data
@@ -45,7 +45,7 @@ BB.gmap.polygon = function( data, controller )
 	this.init();
 	// Chainable
 	return this;
-}
+};
 
 /**
 * Extends BB.gmap.line
@@ -61,7 +61,7 @@ BB.gmap.polygon.prototype.display = function()
 
 	var styles = this.get_styles();
 	if (typeof styles == 'undefined') {
-		this.error('Undefined styles at BB.gmap.polygon.display : ' + styles)
+		this.error('Undefined styles at BB.gmap.polygon.display : ' + styles);
 	}
 
 	// Setting paths
@@ -85,4 +85,9 @@ BB.gmap.polygon.prototype.display = function()
 	this.listeners();
 
 	return this;
-}
+};
+
+BB.gmap.polygon.prototype.get_position = function()
+{
+	return this.object().getPaths();
+};

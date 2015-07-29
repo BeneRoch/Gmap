@@ -26,7 +26,7 @@ BB.gmap = BB.gmap || {};
 */
 BB.gmap.infobox = function( elem, opts )
 {
-	this.__MAP;
+	this.__MAP = undefined;
 
 	// Let's get rid of jQuery for this one
 	if (elem instanceof jQuery) {
@@ -64,7 +64,7 @@ BB.gmap.infobox = function( elem, opts )
 	// Set map.
 	this.set_map( opts.map );
 
-}
+};
 
 function init_infoBox() {
 
@@ -88,12 +88,12 @@ function init_infoBox() {
 	{
 		this.__MAP = map;
 		this.setMap( this.__MAP );
-	}
+	};
 
 	BB.gmap.infobox.prototype.map = function()
 	{
 		return this.__MAP;
-	}
+	};
 
 
 	BB.gmap.infobox.prototype.draw = function() {
@@ -149,7 +149,7 @@ function init_infoBox() {
 		else {
 			// The panes have not changed, so no need to create or move the div.
 		}
-	}
+	};
 
 	BB.gmap.infobox.prototype.panMap = function() {
 		// if we go beyond map, pan map
@@ -218,7 +218,7 @@ function init_infoBox() {
 
 		// center the map to the new shifted center
 		map.setCenter(new google.maps.LatLng(centerY, centerX));
-		if (this._bounds_changed_listener != null) {
+		if (this._bounds_changed_listener !== null) {
 			google.maps.event.removeListener(this._bounds_changed_listener);
 		}
 		this._bounds_changed_listener = null;

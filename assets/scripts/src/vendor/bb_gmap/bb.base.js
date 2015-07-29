@@ -146,14 +146,6 @@ BB.base.prototype._unescape_data = function(data) {
 		return '';
 	}
 
-	if (typeof data == 'array') {
-		var i = 0;
-		var count = data.length;
-		for (; i < count; i++) {
-			data[i] = this._unescape_data(data[i]);
-		}
-	}
-
 	if (typeof data == 'object') {
 		for (var k in data) {
 			data[k] = this._unescape_data(data[k]);
@@ -233,7 +225,7 @@ BB.base.prototype.is_empty_object = function( obj )
 	}
 
 	return true;
-}
+};
 
 /**
  * Merge defaults with user options

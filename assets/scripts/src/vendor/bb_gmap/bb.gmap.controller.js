@@ -47,7 +47,7 @@ BB.gmap = BB.gmap || {};
 BB.gmap.controller = function(container, data)
 {
 	// Keep the map in sight
-	this._MAP;
+	this._MAP = undefined;
 
 	// DOM Element where is applied the actual map
 	this.__CONTAINER = container;
@@ -70,12 +70,12 @@ BB.gmap.controller = function(container, data)
 
 	// Focused item
 	// could be line, marker, polygon, polygon vertex, whatever.
-	this.__FOCUSED_ITEM;
+	this.__FOCUSED_ITEM = undefined;
 
 	this.set_data(data);
 
 	return this;
-}
+};
 
 BB.gmap.controller.prototype = new BB.base();
 
@@ -86,11 +86,11 @@ BB.gmap.controller.prototype.map = function()
 {
 	if (!this._MAP) {
 		// No map yet
-		this.error('No map associated to the current controller at BB.gmap.controller.map()')
+		this.error('No map associated to the current controller at BB.gmap.controller.map()');
 		return;
 	}
 	return this._MAP;
-}
+};
 
 /**
 * Helper
@@ -101,12 +101,12 @@ BB.gmap.controller.prototype.map = function()
 BB.gmap.controller.prototype.set_zoom = function(zoom)
 {
 	this.map().setZoom( zoom );
-}
+};
 BB.gmap.controller.prototype.container = function()
 {
 
 	return this.__CONTAINER;
-}
+};
 
 /**
 * MAP OPTIONS
@@ -133,33 +133,33 @@ BB.gmap.controller.prototype.init = function()
 	this._MAP = new google.maps.Map(this.container(), map_options);
 
 	// Any places yet?
-	if (typeof _data[ 'places' ] == 'undefined') {
-		this.error('You haven\'t set any places yet')
+	if (typeof _data.places == 'undefined') {
+		this.error('You haven\'t set any places yet');
 		return this;
 	}
-	this.add_places( _data[ 'places' ] )
+	this.add_places( _data.places );
 
 	// Add listeners (map click)
 	this.listeners();
 
 	return this;
-}
+};
 
 BB.gmap.controller.prototype.set_styles = function ( styles ) {
 	if (typeof styles != 'object') {
-		this.error('Invalid type styles in BB.gmap.set_styles()' + styles)
+		this.error('Invalid type styles in BB.gmap.set_styles()' + styles);
 	}
 
 	// Create a new StyledMapType object, passing it the array of styles,
 	// as well as the name to be displayed on the map type control.
-	var styles = new google.maps.StyledMapType(styles,
+	var s = new google.maps.StyledMapType(s,
 	{name: "Custom"});
 
 	//Associate the styled map with the MapTypeId and set it to display.
-	this.map().mapTypes.set('custom', styles);
+	this.map().mapTypes.set('custom', s);
 	this.map().setMapTypeId('custom');
 	return this;
-}
+};
 
 
 /**
@@ -173,7 +173,7 @@ BB.gmap.controller.prototype.set_styles = function ( styles ) {
 BB.gmap.controller.prototype.add_places = function( places )
 {
 	if (!places) {
-		this.error('Invalid places specified :' + places)
+		this.error('Invalid places specified :' + places);
 		return this;
 	}
 
@@ -182,7 +182,7 @@ BB.gmap.controller.prototype.add_places = function( places )
 	}
 
 	return this;
-}
+};
 
 BB.gmap.controller.prototype.set_place = function( type, ident, data )
 {
@@ -199,7 +199,7 @@ BB.gmap.controller.prototype.set_place = function( type, ident, data )
 	}
 	this.__PLACES[ type ][ ident ] = data;
 	return this;
-}
+};
 
 /**
 * {
@@ -215,15 +215,15 @@ BB.gmap.controller.prototype.add_place = function( ident, data )
 	}
 
 	// Every place should have is uniq ident
-	if (typeof data[ 'type' ] != 'string') {
+	if (typeof data.type != 'string') {
 		this.error('Missing parameter "type" in BB.gmap.controller.prototype.add_place');
 		return this;
 	}
 
 	// Set ident.
-	data[ 'ident' ] = ident;
+	data.ident = ident;
 
-	var type = data['type'];
+	var type = data.type;
 
 
 	switch (type) {
@@ -248,16 +248,16 @@ BB.gmap.controller.prototype.add_place = function( ident, data )
 	}
 
 	return this;
-}
+};
 
 BB.gmap.controller.prototype.get_places = function()
 {
 	return this.__PLACES;
-}
+};
 BB.gmap.controller.prototype.get_places_by_type = function(type)
 {
 	return this.__PLACES[ type ];
-}
+};
 
 /**
 *
@@ -268,7 +268,7 @@ BB.gmap.controller.prototype.add_marker = function( ident, data )
 	this.set_place('markers', ident, new BB.gmap.marker(data, this));
 	this.get_places_by_type('markers')[ ident ].set_ident('ident');
 	return this;
-}
+};
 
 /**
 *
@@ -279,11 +279,11 @@ BB.gmap.controller.prototype.get_marker = function( ident )
 	var _markers = this.get_places_by_type('markers');
 
 	if (typeof _markers[ ident ] == 'undefined') {
-		this.error('Invalid marker ident at BB.gmap.controller.get_marker( ident ) : ' + ident)
+		this.error('Invalid marker ident at BB.gmap.controller.get_marker( ident ) : ' + ident);
 		return false;
 	}
 	return _markers[ ident ];
-}
+};
 
 BB.gmap.controller.prototype.add_place_by_address = function( ident, address, data )
 {
@@ -291,8 +291,8 @@ BB.gmap.controller.prototype.add_place_by_address = function( ident, address, da
 	this.geocode_address( address, function(coords) {
 		data.coords = coords;
 		that.add_place(ident, data);
-	})
-}
+	});
+};
 
 
 BB.gmap.controller.prototype.geocode_address = function( address, callback )
@@ -326,7 +326,7 @@ BB.gmap.controller.prototype.geocode_address = function( address, callback )
 		return error;
 
 	}
-}
+};
 
 /**
 *
@@ -352,7 +352,7 @@ BB.gmap.controller.prototype.get_place = function( ident )
 	}
 
 	return place;
-}
+};
 
 BB.gmap.controller.prototype.remove_focus = function()
 {
@@ -363,7 +363,7 @@ BB.gmap.controller.prototype.remove_focus = function()
 	}
 
 	return this;
-}
+};
 
 /**
 *
@@ -379,7 +379,7 @@ BB.gmap.controller.prototype.set_focus = function( item )
 	}
 
 	this.__FOCUSED_ITEM = item;
-}
+};
 
 /**
 * Retrieve focus Item, then change it.
@@ -387,32 +387,14 @@ BB.gmap.controller.prototype.set_focus = function( item )
 BB.gmap.controller.prototype.focused = function()
 {
 	return this.__FOCUSED_ITEM;
-}
+};
 
-BB.gmap.controller.prototype.add_clusterer = function()
-{
-
-}
-BB.gmap.controller.prototype.get_clusterer = function()
-{
-
-}
-
-BB.gmap.controller.prototype.filter = function( filters )
-{
-
-}
-
-BB.gmap.controller.prototype.clear_infoboxes = function()
-{
-
-}
 
 BB.gmap.controller.prototype.refresh = function()
 {
 	this.clear_infoboxes();
 
-}
+};
 
 /**
 * Utils
@@ -428,7 +410,7 @@ BB.gmap.controller.prototype.translate_coords = function(coords) {
 		return ;
 	}
 	return new google.maps.LatLng(coords[0], coords[1]);
-}
+};
 
 /**
 *
@@ -437,12 +419,36 @@ BB.gmap.controller.prototype.listeners = function()
 {
 	google.maps.event.clearListeners(this.map(), 'click');
 	var that = this;
-	google.maps.event.addListener(this.map(), 'click', function(event) { that.map_click(event) });
+	google.maps.event.addListener(this.map(), 'click', function(event) { that.map_click(event); });
 
 	return this;
+};
+
+
+BB.gmap.controller.prototype.create_new = function()
+{
+	// var test = new BB.gmap.polygon({
+	// 				editable: true,
+	// 				styles : {
+	// 				    strokeColor: '#99cc00',
+	// 				    strokeOpacity: 0.8,
+	// 				    strokeWeight: 3,
+	// 				    fillColor: '#FF0000',
+	// 				    fillOpacity: 0.35,
+	// 					hover : {
+	// 					    strokeColor: '#ffffff',
+	// 					    strokeOpacity: 0.8,
+	// 					    strokeWeight: 3,
+	// 					    fillColor: '#000000',
+	// 					    fillOpacity: 1
+	// 					},
+	// 					focused : {
+	// 					    fillOpacity: 1
+	// 					}
+	// 				}}, map)
+	// map.set_place('polygons', 'agna', test)
+	// map.set_focus( test )
 }
-
-
 
 /**
 * Listeners for map click
@@ -467,8 +473,7 @@ BB.gmap.controller.prototype.map_click = function(event)
 
 	return this;
 
-}
-
+};
 
 
 /**
@@ -498,4 +503,32 @@ BB.gmap.controller.prototype._loop_all = function( callback )
 	}
 
 	return this;
-}
+};
+
+
+/**
+* Fits bounds of ALL the objects on the page.
+*/
+BB.gmap.controller.prototype.fit_bounds = function()
+{
+	// Scope
+	var that = this;
+
+    var bounds = new google.maps.LatLngBounds();
+
+	this._loop_all( function( obj )
+	{
+		var paths = obj.get_position();
+   		var path;
+	    for (var i = 0; i < paths.getLength(); i++) {
+	        path = paths.getAt(i);
+	        for (var ii = 0; ii < path.getLength(); ii++) {
+	            bounds.extend(path.getAt(ii));
+	        }
+	    }
+
+	});
+
+	this.map().fitBounds( bounds );
+    return bounds;
+};

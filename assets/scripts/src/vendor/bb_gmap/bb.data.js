@@ -26,16 +26,16 @@ BB.data = function(data)
 	if (this.__HIDDEN_DATA__) {
 		var __DATA = data || {};
 		return {
-			set_data: function(data) 
-			{ 	
+			set_data: function(data)
+			{
 				for (var key in data) {
 					__DATA[key] = data[ key ];
 				}
 		 	},
-			get_data: function(data) 
-			{ 
+			get_data: function(data)
+			{
 				if (!data) {
-					return __DATA; 
+					return __DATA;
 				}
 				if (typeof __DATA[ data ] != 'undefined') {
 					return __DATA[ data ];
@@ -54,17 +54,17 @@ BB.data = function(data)
 				}
 				return ;
 			}
-		}
+		};
 	}
 
 	this.__DATA = data || {};
 
-	this.set_data = function(data) 
-	{ 
+	this.set_data = function(data)
+	{
 		if (!this.__DATA) {
 			this.__DATA = data || {};
 			return ;
-		}	
+		}
 		if (!data) {
 			return ;
 		}
@@ -72,18 +72,18 @@ BB.data = function(data)
 			this.__DATA[key] = data[ key ];
 		}
 		return ;
-	}
+	};
 
-	this.get_data = function(data) 
-	{ 
+	this.get_data = function(data)
+	{
 		if (!data) {
-			return this.__DATA; 
+			return this.__DATA;
 		}
 		if (typeof this.__DATA[ data ] != 'undefined') {
 			return this.__DATA[ data ];
 		}
 		return ;
-	}
+	};
 
 	this.remove_data = function(key)
 	{
@@ -96,7 +96,7 @@ BB.data = function(data)
 			delete this.__DATA[ key ];
 		}
 		return ;
-	}
+	};
 
 	return this;
-}
+};

@@ -38,11 +38,11 @@ BB.gmap.line = function( data, controller )
 {
 	// Contains the google map object
 	this.__OBJECT = undefined;
-	this.__STYLES;
-	this.__PATHS;
+	this.__STYLES = undefined;
+	this.__PATHS = undefined;
 
 	// One marker per point to make it editable
-	this.__MARKERS;
+	this.__MARKERS = undefined;
 
 	this.__CONTROLLER = controller;
 
@@ -58,7 +58,7 @@ BB.gmap.line = function( data, controller )
 	this.init();
 	// Chainable
 	return this;
-}
+};
 
 BB.gmap.line.prototype = new BB.base();
 
@@ -70,8 +70,8 @@ BB.gmap.line.prototype.init = function()
 	var _data = this.data();
 
 	// Set styles
-	if (typeof _data[ 'styles' ] == 'object') {
-		this.add_styles( _data[ 'styles' ]);
+	if (typeof _data.styles == 'object') {
+		this.add_styles( _data.styles );
 	}
 
 	// Default = Empty array
@@ -79,11 +79,11 @@ BB.gmap.line.prototype.init = function()
 	this.set_paths( [] );
 
 	// Set paths
-	if (typeof _data[ 'paths' ] == 'object') {
+	if (typeof _data.paths == 'object') {
 		var i = 0;
-		var total = _data[ 'paths' ].length;
+		var total = _data.paths.length;
 		for (; i<total; i++) {
-			this.add_point( _data[ 'paths' ][ i ] );
+			this.add_point( _data.paths[ i ] );
 		}
 	}
 
@@ -93,13 +93,13 @@ BB.gmap.line.prototype.init = function()
 	}
 
 	// Allow editable from options
-	if (_data[ 'editable' ]) {
-		this.set_editable( _data['editable'] );
+	if (_data.editable) {
+		this.set_editable( _data.editable );
 	}
 
 	this.listeners();
 	return this;
-}
+};
 
 /**
 * Pretty much the same as init, but removing all markers associated
@@ -128,7 +128,7 @@ BB.gmap.line.prototype.redraw = function()
 
 	this.set_data({ paths : new_paths });
 	this.init();
-}
+};
 
 
 
@@ -141,7 +141,7 @@ BB.gmap.line.prototype.add_styles = function( styles )
 	// Add validation here.
 
 	this.__STYLES = styles;
-}
+};
 
 /**
 * AUTOMATICALLY SETS THE STYLE
@@ -151,12 +151,12 @@ BB.gmap.line.prototype.set_styles = function( styles )
 	this.add_styles(styles);
 	this.display();
 	return this;
-}
+};
 
 BB.gmap.line.prototype.get_styles = function()
 {
 	return this.__STYLES;
-}
+};
 
 
 BB.gmap.line.prototype.set_paths = function( paths )
@@ -169,7 +169,7 @@ BB.gmap.line.prototype.set_paths = function( paths )
 	if (!(paths[0] instanceof google.maps.LatLng)) {
 		var i = 0;
 		var count = paths.length;
-		var coords = new google.maps.MVCArray;
+		var coords = new google.maps.MVCArray();
 		for (; i<count; i++) {
 			if (typeof paths[i] != 'object') {
 				// Error.
@@ -182,7 +182,7 @@ BB.gmap.line.prototype.set_paths = function( paths )
 		paths = coords;
 	}
 	this.__PATHS = paths;
-}
+};
 
 /**
 * Return paths
@@ -191,7 +191,7 @@ BB.gmap.line.prototype.set_paths = function( paths )
 BB.gmap.line.prototype.get_paths = function()
 {
 	return this.__PATHS;
-}
+};
 
 BB.gmap.line.prototype.display = function()
 {
@@ -199,7 +199,7 @@ BB.gmap.line.prototype.display = function()
 
 	var styles = this.get_styles();
 	if (typeof styles == 'undefined') {
-		this.error('Undefined styles at BB.gmap.line.display : ' + styles)
+		this.error('Undefined styles at BB.gmap.line.display : ' + styles);
 	}
 
 	var paths = this.get_paths();
@@ -221,31 +221,31 @@ BB.gmap.line.prototype.display = function()
 
 
 	return this;
-}
+};
 
 BB.gmap.line.prototype.show = function()
 {
 	var _line = this.object();
 	if (typeof line == 'undefined') {
-		this.error('No line defined at BB.gmap.line.show()')
+		this.error('No line defined at BB.gmap.line.show()');
 	}
 	line.setMap(this.controller().map());
-}
+};
 
 BB.gmap.line.prototype.hide = function()
 {
 	var _line = this.object();
 	if (typeof line == 'undefined') {
-		this.error('No line defined at BB.gmap.line.hide()')
+		this.error('No line defined at BB.gmap.line.hide()');
 	}
 	_line.setMap(null);
-}
+};
 
 
 BB.gmap.line.prototype.controller = function()
 {
 	return this.__CONTROLLER;
-}
+};
 
 
 /**
@@ -256,7 +256,7 @@ BB.gmap.line.prototype.set_object = function( object )
 {
 	this.__OBJECT = object;
 	return this;
-}
+};
 
 /**
 * Return google line object
@@ -265,14 +265,14 @@ BB.gmap.line.prototype.set_object = function( object )
 BB.gmap.line.prototype.object = function()
 {
 	return this.__OBJECT;
-}
+};
 
 BB.gmap.line.prototype.refresh = function()
 {
 	var opts = this.data('_opts');
 	var line = this.object();
 	line.setOptions(opts);
-}
+};
 
 /**
 * Requires either google map object
@@ -283,7 +283,7 @@ BB.gmap.line.prototype.set_map = function( map )
 	this.object().setMap( map );
 
 	return this;
-}
+};
 
 /**
 * @param path Coords or the point
@@ -340,7 +340,7 @@ BB.gmap.line.prototype.add_point = function(path, index)
 	}
 
 	return this;
-}
+};
 
 /**
 * When dragging a marker to change the point
@@ -378,7 +378,7 @@ BB.gmap.line.prototype.move_point = function( index, path )
 	paths.setAt( index, path );
 
 	return this;
-}
+};
 
 /**
 * Remove one point from the polygon
@@ -410,7 +410,7 @@ BB.gmap.line.prototype.remove_point = function( index )
 	this.redraw();
 
 	return this;
-}
+};
 
 
 /**
@@ -429,12 +429,12 @@ BB.gmap.line.prototype.set_editable = function(param)
 
 	return this;
 
-}
+};
 
 BB.gmap.line.prototype.map_click = function(event)
 {
 	this.add_point(event.latLng);
-}
+};
 
 
 /**
@@ -454,7 +454,7 @@ BB.gmap.line.prototype.set_draggable = function(bool)
 	this.set_styles(styles);
 	return this;
 
-}
+};
 
 
 
@@ -471,7 +471,7 @@ BB.gmap.line.prototype.listeners = function()
 	google.maps.event.addListener( that.object(), 'mouseover', that.mouse_over );
 	google.maps.event.addListener( that.object(), 'mouseout', that.mouse_out );
 	google.maps.event.addListener( that.object(), 'click', that.click );
-}
+};
 
 /**
 * `this` is NOT a BB.gmap.line object
@@ -483,9 +483,7 @@ BB.gmap.line.prototype.mouse_over = function( event )
 	var that = this.bbobject;
 	var _data = that.data();
 
-	console.log(_data[ 'onmouseover' ]);
-
-	if (typeof _data[ 'onmouseover' ] == 'function') {
+	if (typeof _data.onmouseover == 'function') {
 		_data.onmouseover( event );
 	}
 
@@ -494,7 +492,7 @@ BB.gmap.line.prototype.mouse_over = function( event )
 	if (typeof styles.hover == 'object') {
 		that.set_styles( styles.hover );
 	}
-}
+};
 
 /**
 * `this` is NOT a BB.gmap.line object
@@ -507,7 +505,7 @@ BB.gmap.line.prototype.mouse_out = function( event )
 
 	var _data = that.data();
 
-	if (typeof _data[ 'onmouseout' ] == 'function') {
+	if (typeof _data.onmouseout == 'function') {
 		_data.onmouseout( that, event );
 	}
 
@@ -517,7 +515,7 @@ BB.gmap.line.prototype.mouse_out = function( event )
 	}
 	// Go back to original state
 	that.set_styles( that.get_data('styles') );
-}
+};
 
 
 /**
@@ -530,7 +528,7 @@ BB.gmap.line.prototype.mouse_down = function( event )
 	var that = this.bbobject;
 	// Go back to original state
 	// that.set_styles( that.get_data('styles') );
-}
+};
 
 
 /**
@@ -543,7 +541,7 @@ BB.gmap.line.prototype.mouse_up = function( event )
 	var that = this.bbobject;
 	// Go back to original state
 	// that.set_styles( that.get_data('styles') );
-}
+};
 
 /**
 * `this` is NOT a BB.gmap.line object
@@ -556,13 +554,13 @@ BB.gmap.line.prototype.click = function( event )
 	var that = this.bbobject;
 	var _data = that.data();
 
-	if (typeof _data[ 'onclick' ] == 'function') {
+	if (typeof _data.onclick == 'function') {
 		_data.onclick( event );
 	}
 
 	that.focus();
 
-}
+};
 
 /**
 * Set focus on the current item, tell so to the controller
@@ -578,7 +576,7 @@ BB.gmap.line.prototype.focus = function()
 	this.controller().set_focus( this );
 
 	return this;
-}
+};
 
 /**
 * Go to the original state of the object
@@ -589,4 +587,36 @@ BB.gmap.line.prototype.blur = function()
 	this.set_styles( this.get_data('styles') );
 
 	return this;
-}
+};
+
+/**
+*
+* @return google LatLngBounds object
+*/
+BB.gmap.line.prototype.get_bounds = function()
+{
+	// Scope
+	var that = this;
+
+    var bounds = new google.maps.LatLngBounds();
+    var paths = that.object().getPaths();
+    var path;
+    for (var i = 0; i < paths.getLength(); i++) {
+        path = paths.getAt(i);
+        for (var ii = 0; ii < path.getLength(); ii++) {
+            bounds.extend(path.getAt(ii));
+        }
+    }
+    return bounds;
+};
+
+/**
+* returns a nested mcvarray in order to fit the polygon paths declaration
+* @return MCVArray paths
+*/
+BB.gmap.line.prototype.get_position = function()
+{
+	var array = new google.maps.MVCArray();
+	array.push(this.object().getPath());
+	return array;
+};

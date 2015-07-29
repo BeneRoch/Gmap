@@ -30,12 +30,40 @@
 					coords : [ 45.577997,-73.76850009999998 ],
 					draggable: true
 				},
-				polygon : {
-					type : 'polygon',
+				line : {
+					type : 'line',
 					paths: [
 						[37.772323, -122.214897],
 						[21.291982, -157.821856],
 						[-18.142599, 178.431]
+					],
+					onmouseover: function(object, event) {
+
+					},
+					styles : {
+					    strokeColor: '#99cc00',
+					    strokeOpacity: 0.8,
+					    strokeWeight: 3,
+					    fillColor: '#FF0000',
+					    fillOpacity: 0.35,
+						hover : {
+						    strokeColor: '#ffffff',
+						    strokeOpacity: 0.8,
+						    strokeWeight: 3,
+						    fillColor: '#000000',
+						    fillOpacity: 1
+						},
+						focused : {
+						    fillOpacity: 1
+						}
+					}
+				},
+				polygon : {
+					type : 'polygon',
+					paths: [
+						[37.272323, -122.214897],
+						[21.191982, -197.821856],
+						[-18.142599, 138.431]
 					],
 					onmouseover: function(object, event) {
 
