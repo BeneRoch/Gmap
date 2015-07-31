@@ -13,6 +13,8 @@ var BB = BB || {};
 
 BB.gmap = BB.gmap || {};
 
+BB.gmap.statics = BB.gmap.statics || {};
+
 /**
 * #Marker object class
 * Accepts all datas at first
@@ -38,6 +40,9 @@ BB.gmap.marker = function( data, controller )
 	// Status vars
 	this._image_loaded = false;
 	this._marker_loaded = false;
+
+	// Infobox if needed
+	this.__INFOBOX = undefined;
 
 	// Set data
 	this.set_data( data );
@@ -337,10 +342,50 @@ BB.gmap.marker.prototype.onclick = function(event)
 	// Scope
 	var that = this.bbmarker;
 
+
+
 	var _data = that.data();
 
 	if (typeof _data.onclick == 'function') {
 		_data.onclick( event );
+	}
+
+	if (_data.infobox) {
+		if (that.__INFOBOX) {
+			if (that.__INFOBOX.map) {
+				that.__INFOBOX.set_map( null );
+			} else {
+				that.__INFOBOX.set_map( that.controller().map() );
+			}
+			that.focus();
+			return this;
+		}
+
+		if (!BB.gmap.statics.infobox_loaded) {
+			init_infoBox();
+			BB.gmap.statics.infobox_loaded = true;
+		}
+
+		if (typeof _data.infobox == 'string') {
+			_data.infobox = document.getElementById( _data.infobox );
+		}
+
+		var infobox_options = {};
+		if (_data.infobox_options) {
+			infobox_options = _data.infobox_options;
+		}
+
+		// Default placement
+		if (!infobox_options.offsetY) {
+			infobox_options.offsetY = -that.icon().height;
+		}
+
+		if (!infobox_options.offsetX) {
+			infobox_options.offsetX = -(that.icon().width/2);
+		}
+		infobox_options.map = that.controller().map();
+		infobox_options.position = that.get_position().getAt(0).getAt(0);
+		that.__INFOBOX = new BB.gmap.infobox( _data.infobox, infobox_options );
 	}
 
 	that.focus();

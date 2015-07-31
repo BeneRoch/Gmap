@@ -4,7 +4,11 @@
 <div id="test" class="test" style="border: 1px solid blue; width: 100%; height: 100%; background: red;">
 
 </div>
-<div id="agna" style="width: 500px; height:500px; border: 2px solid blue;"></div>
+<div id="agna" style="width: 300px; height:200px; border: 1px solid red;">
+	<div style="width: 300px; height:200px; border: 1px solid red;">
+		agna magna?
+	</div>
+</div>
 </body>
 
 
@@ -13,7 +17,8 @@
 	function initialize()
 	{
 		map = new BB.gmap.controller(document.getElementById('test'), {
-		   map: {
+			use_clusterer: true,
+		   	map: {
 	  			center: {
 					x 	: 45.577997,
 					y 	: -73.76850009999998
@@ -28,7 +33,8 @@
 					type : 'marker',
 		            icon : 'assets/images/marker.png',
 					coords : [ 45.577997,-73.76850009999998 ],
-					draggable: true
+					draggable: true,
+					infobox: 'agna'
 				},
 				line : {
 					type : 'line',
@@ -88,13 +94,13 @@
 				}
 			}
 		})
-		map.init()
 
 		map.add_place_by_address('test_un_autre', '1859 iberville, montréal, qc, h2k3c4', {
 			type : 'marker',
 		    icon : 'assets/images/marker-tri.png',
 		    icon_selected : 'assets/images/marker-tri-selected.png'
 		})
+		map.init();
 	}
 </script>
 

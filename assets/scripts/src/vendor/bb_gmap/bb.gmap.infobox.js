@@ -11,6 +11,7 @@ var BB = BB || {};
 
 BB.gmap = BB.gmap || {};
 
+BB.gmap.statics = BB.gmap.statics || {};
 
 /**
 * Infobox class
@@ -26,6 +27,7 @@ BB.gmap = BB.gmap || {};
 */
 BB.gmap.infobox = function( elem, opts )
 {
+	BB.gmap.statics
 	this.__MAP = undefined;
 
 	// Let's get rid of jQuery for this one
@@ -35,6 +37,7 @@ BB.gmap.infobox = function( elem, opts )
 	}
 
 	// Just remember this.
+	// We wanna take INNERHTML of that Document Element
 	this.__ELEM = elem;
 
 	// Extend
@@ -50,14 +53,16 @@ BB.gmap.infobox = function( elem, opts )
 	opts.offsetY = opts.offsetY || 0;
 	opts.offsetX = opts.offsetX || 0;
 
-	this._offsetY = -(parseInt(this._height) + parseFloat(opts.offsetY) );
-	this._offsetX = -(parseInt(this._width/2) + parseFloat(opts.offsetY) );
+	this._offsetY = -(parseInt(this._height) - parseFloat(opts.offsetY) );
+	this._offsetX = -(parseInt(this._width/2) - parseFloat(opts.offsetX) );
+
+	this.__MAP = opts.map;
 
 	// Scope
 	var that = this;
 
 	// Remember the listener so we can remove it when needed
-	this._bounds_changed_listener = google.maps.event.addListener(this.map_, "bounds_changed", function() {
+	this._bounds_changed_listener = google.maps.event.addListener(this.__MAP, "bounds_changed", function() {
 		return that.panMap.apply(that);
 	});
 
@@ -97,9 +102,8 @@ function init_infoBox() {
 
 
 	BB.gmap.infobox.prototype.draw = function() {
-		if (typeof charcoal_map.infoBoxes[this.index_] != 'undefined' || typeof label_infobox[this.index_] != "undefined") {
 			this.createElement();
-			if (!this._div) return;
+			// if (!this._div) return;
 
 			var pixPosition = this.getProjection().fromLatLngToDivPixel(this.opts.position);
 			if (!pixPosition) return;
@@ -110,7 +114,8 @@ function init_infoBox() {
 			this._div.style.top = (pixPosition.y + this._offsetY) + "px";
 			this._div.style.display = 'block';
 			this._div.style.zIndex = 1;
-		}
+
+			console.log(this._div);
 	};
 	BB.gmap.infobox.prototype.createElement = function() {
 		var panes = this.getPanes();
@@ -129,7 +134,7 @@ function init_infoBox() {
 			div.setAttribute('class',infobox_class);
 
 			contentDiv = document.createElement("div");
-			$(contentDiv).html($(this.appendDiv_).html());
+			$(contentDiv).html(this.__ELEM.innerHTML);
 
 			div.appendChild(contentDiv);
 			contentDiv.style.display = 'block';
@@ -153,7 +158,9 @@ function init_infoBox() {
 
 	BB.gmap.infobox.prototype.panMap = function() {
 		// if we go beyond map, pan map
-		var map = this.map();
+
+		console.log( this );
+		var map = this.map;
 		var bounds = map.getBounds();
 		if (!bounds) return;
 
@@ -205,10 +212,6 @@ function init_infoBox() {
 		// The center of the map
 		var center = map.getCenter();
 
-		if (!center) {
-			center = charcoal_map.map.getCenter();
-		}
-
 		if (!center || typeof center == 'undefined') {
 			return false;
 		}
@@ -217,11 +220,12 @@ function init_infoBox() {
 		var centerY = center.lat() - shiftLat;
 
 		// center the map to the new shifted center
-		map.setCenter(new google.maps.LatLng(centerY, centerX));
+		// map.setCenter(new google.maps.LatLng(centerY, centerX));
 		if (this._bounds_changed_listener !== null) {
 			google.maps.event.removeListener(this._bounds_changed_listener);
 		}
 		this._bounds_changed_listener = null;
 	};
+
 }
 

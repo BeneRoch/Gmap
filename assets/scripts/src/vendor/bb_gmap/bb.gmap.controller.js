@@ -72,6 +72,9 @@ BB.gmap.controller = function(container, data)
 	// could be line, marker, polygon, polygon vertex, whatever.
 	this.__FOCUSED_ITEM = undefined;
 
+	// MarkerClusterer
+	this.__CLUSTERER = undefined;
+
 	this.set_data(data);
 
 	return this;
@@ -228,7 +231,8 @@ BB.gmap.controller.prototype.add_place = function( ident, data )
 
 	switch (type) {
 		case 'marker':
-			this.set_place('markers', ident, new BB.gmap.marker(data, this));
+			var marker = new BB.gmap.marker(data, this);
+			this.set_place('markers', ident, marker);
 			// Might add some extra sanitize functions here
 			// this.set_place('markers', ident, data)
 
@@ -245,6 +249,11 @@ BB.gmap.controller.prototype.add_place = function( ident, data )
 			// this.add_polygon( ident, data );
 			// this.set_place('polygons', ident, data)
 		break;
+	}
+
+	if (this.data('use_clusterer')) {
+		var clusterer_options = this.data('clusterer_options');
+		this.activate_clusterer( clusterer_options );
 	}
 
 	return this;
@@ -424,30 +433,44 @@ BB.gmap.controller.prototype.listeners = function()
 	return this;
 };
 
-
-BB.gmap.controller.prototype.create_new = function()
+/**
+* Dynamically add a new element on the map.
+*
+*/
+BB.gmap.controller.prototype.create_new = function( ident )
 {
-	// var test = new BB.gmap.polygon({
-	// 				editable: true,
-	// 				styles : {
-	// 				    strokeColor: '#99cc00',
-	// 				    strokeOpacity: 0.8,
-	// 				    strokeWeight: 3,
-	// 				    fillColor: '#FF0000',
-	// 				    fillOpacity: 0.35,
-	// 					hover : {
-	// 					    strokeColor: '#ffffff',
-	// 					    strokeOpacity: 0.8,
-	// 					    strokeWeight: 3,
-	// 					    fillColor: '#000000',
-	// 					    fillOpacity: 1
-	// 					},
-	// 					focused : {
-	// 					    fillOpacity: 1
-	// 					}
-	// 				}}, map)
-	// map.set_place('polygons', 'agna', test)
-	// map.set_focus( test )
+	// Scope
+	var that = this;
+
+	if (!ident) {
+		ident = 'new_object';
+	}
+
+	var test = new BB.gmap.polygon(
+	{
+		editable: true,
+		styles : {
+		    strokeColor: '#99cc00',
+		    strokeOpacity: 0.8,
+		    strokeWeight: 3,
+		    fillColor: '#FF0000',
+		    fillOpacity: 0.35,
+			hover : {
+			    strokeColor: '#ffffff',
+			    strokeOpacity: 0.8,
+			    strokeWeight: 3,
+			    fillColor: '#000000',
+			    fillOpacity: 1
+			},
+			focused : {
+			    fillOpacity: 1
+			}
+		}
+	},
+	map);
+
+	map.set_place('polygons', 'agna', test);
+	map.set_focus( test );
 }
 
 /**
@@ -532,3 +555,60 @@ BB.gmap.controller.prototype.fit_bounds = function()
 	this.map().fitBounds( bounds );
     return bounds;
 };
+
+BB.gmap.controller.prototype.get_all_markers = function()
+{
+	var markers = this.get_places_by_type('markers');
+	var ret = [];
+	for (var k in markers) {
+		ret.push( markers[ k ].object() );
+	}
+	return ret;
+}
+
+
+/**
+* Uses the MarkerClusterer plugin
+* Activates it ONLY for the MARKERS object (not including polygon markers)
+* @param {Object} options
+* @return this (chainable)
+* @see https://github.com/googlemaps/js-marker-clusterer
+
+* @param {Object=} opt_options support the following options:
+*     'gridSize': (number) The grid size of a cluster in pixels.
+*     'maxZoom': (number) The maximum zoom level that a marker can be part of a
+*                cluster.
+*     'zoomOnClick': (boolean) Whether the default behaviour of clicking on a
+*                    cluster is to zoom into it.
+*     'averageCenter': (boolean) Wether the center of each cluster should be
+*                      the average of all markers in the cluster.
+*     'minimumClusterSize': (number) The minimum number of markers to be in a
+*                           cluster before the markers are hidden and a count
+*                           is shown.
+*     'styles': (object) An object that has style properties:
+*       'url': (string) The image url.
+*       'height': (number) The image height.
+*       'width': (number) The image width.
+*       'anchor': (Array) The anchor position of the label text.
+*       'textColor': (string) The text color.
+*       'textSize': (number) The text size.
+*       'backgroundPosition': (string) The position of the backgound x, y.
+*
+* IT USES THE DEFAULT OF MARKERCLUSTERER
+* You need to define new icons when needed
+*/
+BB.gmap.controller.prototype.activate_clusterer = function( options )
+{
+	this.set_clusterer( new MarkerClusterer(this.map(), this.get_all_markers(), {}) );
+	return this;
+}
+
+BB.gmap.controller.prototype.set_clusterer = function( clusterer )
+{
+	this.__CLUSTERER = clusterer;
+}
+
+BB.gmap.controller.prototype.clusterer = function()
+{
+	return this.__CLUSTERER;
+}

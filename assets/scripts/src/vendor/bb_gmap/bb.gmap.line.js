@@ -219,7 +219,6 @@ BB.gmap.line.prototype.display = function()
 
 	this.set_map(this.controller().map());
 
-
 	return this;
 };
 
@@ -620,3 +619,8 @@ BB.gmap.line.prototype.get_position = function()
 	array.push(this.object().getPath());
 	return array;
 };
+
+BB.gmap.line.prototype.export = function()
+{
+
+}
