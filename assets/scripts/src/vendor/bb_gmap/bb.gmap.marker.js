@@ -212,10 +212,11 @@ BB.gmap.marker.prototype.display = function()
 BB.gmap.marker.prototype.show = function()
 {
 	var _marker = this.marker();
-	if (typeof marker == 'undefined') {
+	if (typeof _marker == 'undefined') {
 		this.error('No marker defined at BB.gmap.marker.show()');
+		return this;
 	}
-	marker.setMap(this.controller().map());
+	_marker.setMap(this.controller().map());
 
 	return this;
 };
@@ -227,8 +228,9 @@ BB.gmap.marker.prototype.show = function()
 BB.gmap.marker.prototype.hide = function()
 {
 	var _marker = this.marker();
-	if (typeof marker == 'undefined') {
+	if (typeof _marker == 'undefined') {
 		this.error('No marker defined at BB.gmap.marker.hide()');
+		return this;
 	}
 	_marker.setMap(null);
 

@@ -225,16 +225,16 @@ BB.gmap.line.prototype.display = function()
 BB.gmap.line.prototype.show = function()
 {
 	var _line = this.object();
-	if (typeof line == 'undefined') {
+	if (typeof _line == 'undefined') {
 		this.error('No line defined at BB.gmap.line.show()');
 	}
-	line.setMap(this.controller().map());
+	_line.setMap(this.controller().map());
 };
 
 BB.gmap.line.prototype.hide = function()
 {
 	var _line = this.object();
-	if (typeof line == 'undefined') {
+	if (typeof _line == 'undefined') {
 		this.error('No line defined at BB.gmap.line.hide()');
 	}
 	_line.setMap(null);

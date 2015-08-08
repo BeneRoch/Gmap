@@ -528,9 +528,58 @@ BB.gmap.controller.prototype._loop_all = function( callback )
 	return this;
 };
 
+/**
+* Hide's all map object that don't fit the filter
+* Filters are in the "categories" options of the object.
+*/
+BB.gmap.controller.prototype.filter = function( filter )
+{
+	// Scope
+	var that = this;
+
+	that._loop_all( function( place )
+	{
+		if (!filter) {
+			place.show();
+			return false;
+		}
+
+		var categories = place.data('categories');
+		if (!categories) {
+			place.hide();
+			return false;
+		}
+
+		// Categories should be split by comma
+		// Or be an array from the beginning
+		if (typeof categories == 'string') {
+			categories = categories.split(',');
+		}
+
+		if (!categories) {
+			place.hide();
+		}
+
+		var filter_in_category = false;
+		for (var k in categories)
+		{
+			if (filter == categories[ k ]) {
+				filter_in_category = true;
+			}
+		}
+
+		if (filter_in_category) {
+			place.show();
+		} else {
+			place.hide();
+		}
+
+	})
+}
 
 /**
 * Fits bounds of ALL the objects on the page.
+* @return this (chainable)
 */
 BB.gmap.controller.prototype.fit_bounds = function()
 {
@@ -553,7 +602,8 @@ BB.gmap.controller.prototype.fit_bounds = function()
 	});
 
 	this.map().fitBounds( bounds );
-    return bounds;
+
+	return this;
 };
 
 BB.gmap.controller.prototype.get_all_markers = function()
