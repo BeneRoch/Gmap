@@ -28,7 +28,7 @@ var BB = BB || {};
 BB.base = function()
 {
 
-	this.__BB_DEBUG__	 = false;
+	this.__BB_DEBUG__	 = true;
 	this.__PROTECTED__   = [];
 
 	this._data = undefined;

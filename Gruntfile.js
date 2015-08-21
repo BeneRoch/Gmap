@@ -8,9 +8,17 @@ module.exports = function(grunt) {
 		concat: {
 			global: {
 				src: [
-					'assets/scripts/src/vendor/bb_gmap/*.js'
+					'assets/scripts/src/bb.base.js',
+					'assets/scripts/src/bb.data.js',
+					'assets/scripts/src/bb.gmap.controller.js',
+					'assets/scripts/src/bb.gmap.infobox.js',
+					'assets/scripts/src/bb.gmap.obj.js',
+					'assets/scripts/src/bb.gmap.marker.js',
+					'assets/scripts/src/bb.gmap.line.js',
+					'assets/scripts/src/bb.gmap.polygon.js',
+					'assets/scripts/src/markerclusterer.js'
 				],
-      			dest: 'assets/scripts/dist/bb.gmap.min.js'
+      			dest: 'assets/scripts/dist/bb.gmap.js'
 			}
 		},
 
@@ -59,7 +67,7 @@ module.exports = function(grunt) {
 		uglify: {
 			my_target: {
 				files: {
-					'assets/scripts/dist/gmap.min.js': ['assets/scripts/dist/*.js']
+					'assets/scripts/dist/min/gmap.min.js': ['assets/scripts/dist/*.js']
 				}
 			}
 		}

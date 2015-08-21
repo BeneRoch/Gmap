@@ -18,12 +18,10 @@ BB.gmap.statics = BB.gmap.statics || {};
 /**
 * #Marker object class
 * Accepts all datas at first
-* Needs a google.maps.Marker() object ( data[ 'marker' ] ) in order
+* Needs a google.maps.object() object ( data[ 'marker' ] ) in order
 * be functionnal with all methods
 *
 * ##Options ( options {} )
-* - `icon`:
-* 	- image `url`
 *
 *
 * ##Methods
@@ -32,11 +30,12 @@ BB.gmap.statics = BB.gmap.statics || {};
 */
 BB.gmap.marker = function( data, controller )
 {
-	// Contains the google map object
-	this.__MARKER = undefined;
-	this.__MEDIA = undefined;
-	this.__CONTROLLER = controller;
+	// Call the supra class constructor with the arguments
+	// The controller and object are set in the BB.gmap.object Class
+	BB.gmap.object.call( this, data, controller );
 
+	this.__MEDIA = undefined;
+	this.__ICON = undefined;
 	// Status vars
 	this._image_loaded = false;
 	this._marker_loaded = false;
@@ -44,22 +43,25 @@ BB.gmap.marker = function( data, controller )
 	// Infobox if needed
 	this.__INFOBOX = undefined;
 
-	// Set data
-	this.set_data( data );
+	//
+	this._listeners = false;
 
-	// If case sanitize is needed in the "set_data" process,
-	// retrive them with data()
-	var _data = this.data();
-
-	this.init();
 	// Chainable
 	return this;
 };
 
 /**
-*
+* Create a google map object prototype
+* This means the object will have predefined methods such as:
+* - object()
+* - set_object()
+* - controller()
+* - set_controller()
+* - set_map()
+* - show()
+* - hide()
 */
-BB.gmap.marker.prototype = new BB.base();
+BB.gmap.marker.prototype = Object.create(BB.gmap.object.prototype);
 
 /**
 *
@@ -68,29 +70,21 @@ BB.gmap.marker.prototype.init = function()
 {
 	var _data = this.data();
 
-
 	if (typeof _data.icon == 'string') {
 		// No display called afterward
 		// @see set_image() -> display() called after the image load.
 		this.set_image( _data.icon );
+	}
+	else if (typeof _data.icon == 'object') {
+		// We might have a path object (SVG)
+		 this.set_icon( _data.icon );
+		 this.display();
 	} else {
 		// No image load, no need to wait.
 		this.display();
 	}
 
-	this.__ICON = undefined;
-
 	return this;
-};
-
-/**
-* Fit all other object type by returning the object (marker)
-* @return marker();
-* function marker() will be obsolete at some point.
-*/
-BB.gmap.marker.prototype.object = function()
-{
-	return this.marker();
 };
 
 /**
@@ -117,7 +111,6 @@ BB.gmap.marker.prototype.set_icon = function( icon )
 		return this;
 	}
 	this.__ICON = icon;
-
 	return this;
 };
 
@@ -155,10 +148,6 @@ BB.gmap.marker.prototype.set_image = function( src )
 */
 BB.gmap.marker.prototype.display = function()
 {
-	// if ()
-	var width = this.icon().width;
-	var height = this.icon().height;
-
 	var _data = this.data();
 
 	if (typeof _data.coords != 'object') {
@@ -173,7 +162,28 @@ BB.gmap.marker.prototype.display = function()
 
 	options = this.extend(options, _data);
 
+	var icon = this.icon();
+	if (!(icon instanceof Image)) {
+		// Means we are probably dealing with a PATH object
+		if (typeof icon.path == 'string') {
+			// Yup, was right
+			var height = 0;
+			var width = 0;
+			if (typeof icon.height == 'string') {
+				height = parseInt(icon.height);
+			}
+			if (typeof icon.width == 'string') {
+				width = parseInt(icon.width);
+			}
+			icon.anchor = new google.maps.Point((width/2), height);
+			options.icon = icon;
+		}
+	}
+
+
 	if (this.icon().src) {
+		var width = this.icon().width;
+		var height = this.icon().height;
 		options.icon =  new google.maps.MarkerImage(
 			// image src
 			this.icon().src,
@@ -182,7 +192,7 @@ BB.gmap.marker.prototype.display = function()
 			// Origin for this image; X, Y.
 			new google.maps.Point(0, 0),
 			// Anchor for this image; X, Y.
-			new google.maps.Point(width, height),
+			new google.maps.Point((width/2), height),
 			new google.maps.Size(width, height)
 	   	);
 	}
@@ -193,56 +203,19 @@ BB.gmap.marker.prototype.display = function()
 		options[ k ] = custom_options[ k ];
 	}
 
-	if (typeof this.marker() != 'undefined') {
-		this.marker().setOptions(options);
+	if (typeof this.object() != 'undefined') {
+		this.object().setOptions(options);
 	} else {
 		var marker = new google.maps.Marker(options);
 		this.set_marker( marker );
 	}
 
-	this.listeners();
-
-	return this;
-};
-
-/**
-* show the marker
-* @return this (chainable)
-*/
-BB.gmap.marker.prototype.show = function()
-{
-	var _marker = this.marker();
-	if (typeof _marker == 'undefined') {
-		this.error('No marker defined at BB.gmap.marker.show()');
-		return this;
+	if (!this._listeners) {
+		this.listeners();
+		this._listeners = true;
 	}
-	_marker.setMap(this.controller().map());
 
 	return this;
-};
-
-/**
-* Hide the marker
-* @return this (chainable)
-*/
-BB.gmap.marker.prototype.hide = function()
-{
-	var _marker = this.marker();
-	if (typeof _marker == 'undefined') {
-		this.error('No marker defined at BB.gmap.marker.hide()');
-		return this;
-	}
-	_marker.setMap(null);
-
-	return this;
-};
-
-/**
-* @return BB.gmap.controller
-*/
-BB.gmap.marker.prototype.controller = function()
-{
-	return this.__CONTROLLER;
 };
 
 
@@ -259,27 +232,7 @@ BB.gmap.marker.prototype.set_marker = function( marker )
 	}
 	this._marker_loaded = true;
 
-	this.__MARKER = marker;
-	return this;
-};
-
-/**
-* Return google marker object
-* @return google.maps.Marker()
-*/
-BB.gmap.marker.prototype.marker = function()
-{
-	return this.__MARKER;
-};
-
-/**
-* Requires either google map object
-*
-*/
-BB.gmap.marker.prototype.set_map = function( map )
-{
-	this.marker().setMap( map );
-
+	this.set_object( marker );
 	return this;
 };
 
@@ -293,7 +246,7 @@ BB.gmap.marker.prototype.listeners = function()
 	var that = this;
 
 	// Marker
-	var marker = this.marker();
+	var marker = this.object();
 
 	marker.bbmarker = this;
 
@@ -306,7 +259,6 @@ BB.gmap.marker.prototype.listeners = function()
 	// We might always use the click event, I see no reason to make
 	// it optional. Options will occur in the event handler.
 	google.maps.event.addListener(marker, 'click', that.onclick);
-
 
 };
 
@@ -325,7 +277,7 @@ BB.gmap.marker.prototype.dragend = function(event)
 	var _data = that.data();
 
 	if (typeof _data.ondragend == 'function') {
-		_data.ondragend( event );
+		_data.ondragend( that, event );
 	}
 
 	that.focus();
@@ -349,7 +301,9 @@ BB.gmap.marker.prototype.onclick = function(event)
 	var _data = that.data();
 
 	if (typeof _data.onclick == 'function') {
-		_data.onclick( event );
+		_data.onclick( event, that );
+	} else if (typeof _data.onclick == 'string' && typeof window[ _data.onclick ] == 'function') {
+		window[ _data.onclick ]( that, event  );
 	}
 
 	if (_data.infobox) {
@@ -395,8 +349,7 @@ BB.gmap.marker.prototype.onclick = function(event)
 };
 
 /**
-*
-*marker-selected.png
+* marker-selected.png
 */
 BB.gmap.marker.prototype.focus = function()
 {
@@ -436,7 +389,7 @@ BB.gmap.marker.prototype.get_bounds = function()
 	var that = this;
 
 	var bounds = new google.maps.LatLngBounds();
-	bounds.extend( that.marker().getPosition() );
+	bounds.extend( that.object().getPosition() );
 
 	return bounds;
 };
@@ -452,14 +405,3 @@ BB.gmap.marker.prototype.get_position = function()
 	array.push( position );
 	return array;
 };
-
-
-/**
-* @remove ?
-*/
-// BB.gmap.marker.prototype.refresh = function()
-// {
-// 	var opts = this.data('_opts');
-// 	var marker = this.marker();
-// 	marker.setOptions(opts);
-// }

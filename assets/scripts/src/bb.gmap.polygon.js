@@ -29,21 +29,10 @@ BB.gmap = BB.gmap || {};
 
 BB.gmap.polygon = function( data, controller )
 {
-	// Contains the google map object
-	this.__OBJECT = undefined;
-	this.__STYLES = undefined;
-	this.__PATHS = undefined;
-	this.__CONTROLLER = controller;
+	// Call the supra class constructor with the arguments
+	// The controller and object are set in the BB.gmap.object Class
+	BB.gmap.line.call( this, data, controller );
 
-	// Set data
-	this.set_data( data );
-
-	// If case sanitize is needed in the "set_data" process,
-	// retrive them with data()
-	var _data = this.data();
-
-	this.init();
-	// Chainable
 	return this;
 };
 

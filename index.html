@@ -20,10 +20,10 @@
 			use_clusterer: true,
 		   	map: {
 	  			center: {
-					x 	: 45.577997,
-					y 	: -73.76850009999998
+					x 	: 45.3712923,
+					y 	: -73.9820994
 				},
-				zoom: 3,
+				zoom: 14,
 				mapType 	: 'roadmap',
 				coordsType	: 'inpage', // array, json? (vs ul li)
 				map_mode	: 'default'
@@ -32,7 +32,20 @@
 				test : {
 					categories: 'test,test1,test2',
 					type : 'marker',
-		            icon : 'assets/images/marker.png',
+		            icon : {
+						path: 'M 125,5 155,90 245,90 175,145 200,230 125,180 50,230 75,145 5,90 95,90 z',
+						fillColor: 'yellow',
+						icons : [{
+							icon: "http://localhost/pincourt/www/modules/pincourt/assets/images/svgs/map-marker.svg",
+							offset: '50%'
+						}],
+						fillOpacity: 0.8,
+						scale: 1,
+						strokeColor: 'gold',
+						strokeWeight: 14,
+						height: '20px',
+						width: '20px'
+					},
 					coords : [ 45.577997,-73.76850009999998 ],
 					draggable: true,
 					infobox: 'agna'
@@ -97,12 +110,15 @@
 			}
 		})
 
+
 		map.add_place_by_address('test_un_autre', '1859 iberville, montréal, qc, h2k3c4', {
 			type : 'marker',
 		    icon : 'assets/images/marker-tri.png',
 		    icon_selected : 'assets/images/marker-tri-selected.png'
 		})
-		map.init();
+		map.init();		map.set_styles([{"featureType":"all","elementType":"all","stylers":[{"saturation":-100},{"gamma":1.15}]},{"featureType":"administrative","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1},{"hue":"#00447b"}]},{"featureType":"administrative","elementType":"labels.icon","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.icon","stylers":[{"weight":0.1}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1}]},{"featureType":"all","elementType":"all","stylers":[{"lightness":-12}]}]);
+
+
 	}
 </script>
 

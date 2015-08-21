@@ -104,6 +104,8 @@ BB.gmap.controller.prototype.map = function()
 BB.gmap.controller.prototype.set_zoom = function(zoom)
 {
 	this.map().setZoom( zoom );
+
+	return this;
 };
 BB.gmap.controller.prototype.container = function()
 {
@@ -153,14 +155,27 @@ BB.gmap.controller.prototype.set_styles = function ( styles ) {
 		this.error('Invalid type styles in BB.gmap.set_styles()' + styles);
 	}
 
+	// Set in options
+	var _map_data = this.data('map');
+	_map_data.styles = styles;
+	this.data('map', _map_data);
+
+	// Refresh RIGHT NOW
+	if (this.map()) {
+		this.map().setOptions({ styles : styles });
+	}
+
+
+
 	// Create a new StyledMapType object, passing it the array of styles,
 	// as well as the name to be displayed on the map type control.
-	var s = new google.maps.StyledMapType(s,
-	{name: "Custom"});
+	// var s = new google.maps.StyledMapType(s,
+	// {name: "Custom"});
 
-	//Associate the styled map with the MapTypeId and set it to display.
-	this.map().mapTypes.set('custom', s);
-	this.map().setMapTypeId('custom');
+	// //Associate the styled map with the MapTypeId and set it to display.
+	// this.map().mapTypes.set('custom', s);
+	// this.map().setMapTypeId('custom');
+
 	return this;
 };
 
@@ -187,6 +202,11 @@ BB.gmap.controller.prototype.add_places = function( places )
 	return this;
 };
 
+/**
+* Called by add_place
+* Sets the place in the controller
+* @return this (chainable)
+*/
 BB.gmap.controller.prototype.set_place = function( type, ident, data )
 {
 	if (!ident || !data) {
@@ -279,21 +299,6 @@ BB.gmap.controller.prototype.add_marker = function( ident, data )
 	return this;
 };
 
-/**
-*
-* @return {mixed} BB.gmap.marker || false
-*/
-BB.gmap.controller.prototype.get_marker = function( ident )
-{
-	var _markers = this.get_places_by_type('markers');
-
-	if (typeof _markers[ ident ] == 'undefined') {
-		this.error('Invalid marker ident at BB.gmap.controller.get_marker( ident ) : ' + ident);
-		return false;
-	}
-	return _markers[ ident ];
-};
-
 BB.gmap.controller.prototype.add_place_by_address = function( ident, address, data )
 {
 	var that = this;
@@ -376,7 +381,7 @@ BB.gmap.controller.prototype.remove_focus = function()
 
 /**
 *
-*
+* @param {BB.gmap.object} item
 */
 BB.gmap.controller.prototype.set_focus = function( item )
 {
@@ -396,13 +401,6 @@ BB.gmap.controller.prototype.set_focus = function( item )
 BB.gmap.controller.prototype.focused = function()
 {
 	return this.__FOCUSED_ITEM;
-};
-
-
-BB.gmap.controller.prototype.refresh = function()
-{
-	this.clear_infoboxes();
-
 };
 
 /**

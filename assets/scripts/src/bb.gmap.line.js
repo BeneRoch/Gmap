@@ -36,31 +36,24 @@ BB.gmap = BB.gmap || {};
 */
 BB.gmap.line = function( data, controller )
 {
-	// Contains the google map object
-	this.__OBJECT = undefined;
+	// This is a line + polygon concept
+	// This belongs here
 	this.__STYLES = undefined;
 	this.__PATHS = undefined;
 
 	// One marker per point to make it editable
-	this.__MARKERS = undefined;
-
-	this.__CONTROLLER = controller;
-
 	this.__MARKERS = {};
 
-	// Set data
-	this.set_data( data );
+	// Call the supra class constructor with the arguments
+	// The controller and object are set in the BB.gmap.object Class
+	BB.gmap.object.call( this, data, controller );
 
-	// If case sanitize is needed in the "set_data" process,
-	// retrive them with data()
-	var _data = this.data();
 
-	this.init();
 	// Chainable
 	return this;
 };
 
-BB.gmap.line.prototype = new BB.base();
+BB.gmap.line.prototype = Object.create(BB.gmap.object.prototype);
 
 /**
 *
@@ -139,7 +132,6 @@ BB.gmap.line.prototype.redraw = function()
 BB.gmap.line.prototype.add_styles = function( styles )
 {
 	// Add validation here.
-
 	this.__STYLES = styles;
 };
 
@@ -222,50 +214,6 @@ BB.gmap.line.prototype.display = function()
 	return this;
 };
 
-BB.gmap.line.prototype.show = function()
-{
-	var _line = this.object();
-	if (typeof _line == 'undefined') {
-		this.error('No line defined at BB.gmap.line.show()');
-	}
-	_line.setMap(this.controller().map());
-};
-
-BB.gmap.line.prototype.hide = function()
-{
-	var _line = this.object();
-	if (typeof _line == 'undefined') {
-		this.error('No line defined at BB.gmap.line.hide()');
-	}
-	_line.setMap(null);
-};
-
-
-BB.gmap.line.prototype.controller = function()
-{
-	return this.__CONTROLLER;
-};
-
-
-/**
-* Require google line object
-* @return this (chainable)
-*/
-BB.gmap.line.prototype.set_object = function( object )
-{
-	this.__OBJECT = object;
-	return this;
-};
-
-/**
-* Return google line object
-* @return google.maps.Marker()
-*/
-BB.gmap.line.prototype.object = function()
-{
-	return this.__OBJECT;
-};
-
 BB.gmap.line.prototype.refresh = function()
 {
 	var opts = this.data('_opts');
@@ -273,16 +221,6 @@ BB.gmap.line.prototype.refresh = function()
 	line.setOptions(opts);
 };
 
-/**
-* Requires either google map object
-*
-*/
-BB.gmap.line.prototype.set_map = function( map )
-{
-	this.object().setMap( map );
-
-	return this;
-};
 
 /**
 * @param path Coords or the point
@@ -483,7 +421,7 @@ BB.gmap.line.prototype.mouse_over = function( event )
 	var _data = that.data();
 
 	if (typeof _data.onmouseover == 'function') {
-		_data.onmouseover( event );
+		_data.onmouseover( that, event );
 	}
 
 	var styles = that.get_styles();
@@ -554,7 +492,7 @@ BB.gmap.line.prototype.click = function( event )
 	var _data = that.data();
 
 	if (typeof _data.onclick == 'function') {
-		_data.onclick( event );
+		_data.onclick( that, event );
 	}
 
 	that.focus();
@@ -619,8 +557,3 @@ BB.gmap.line.prototype.get_position = function()
 	array.push(this.object().getPath());
 	return array;
 };
-
-BB.gmap.line.prototype.export = function()
-{
-
-}
