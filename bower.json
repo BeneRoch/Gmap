@@ -1,9 +1,9 @@
 {
   "name": "bb-gmap",
-  "version": "0.1",
+  "homepage": "https://github.com/beneroch/Gmap",
   "description": "Helper classes to deal with Google Map API, control elements on the map",
   "license": "MIT",
-  "main": "index.html",
+  "main": "assets/scripts/dist/min/gmap.min.js",
   "keywords": [
     "bene",
     "bene-bundle",
@@ -16,6 +16,11 @@
     "node_modules",
     "bower_components",
     "README.md",
-    "index.php"
+    "index.php",
+    "test",
+    "tests"
+  ],
+  "authors": [
+    "beneroch <roch.bene@gmail.com>"
   ]
 }
