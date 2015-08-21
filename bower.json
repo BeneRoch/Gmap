@@ -1,0 +1,21 @@
+{
+  "name": "bb-gmap",
+  "version": "0.1",
+  "description": "Helper classes to deal with Google Map API, control elements on the map",
+  "license": "MIT",
+  "main": "index.html",
+  "keywords": [
+    "bene",
+    "bene-bundle",
+    "bb-gmap",
+    "bb_gmap",
+    "gmap"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "README.md",
+    "index.php"
+  ]
+}
