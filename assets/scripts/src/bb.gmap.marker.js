@@ -93,7 +93,6 @@ BB.gmap.marker.prototype.init = function()
 BB.gmap.marker.prototype.icon = function()
 {
 	if (!this.__ICON) {
-		this.error('No icon were defined yet.');
 		return new Image();
 	}
 	return this.__ICON;

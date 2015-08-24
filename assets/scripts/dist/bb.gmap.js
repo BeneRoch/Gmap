@@ -787,9 +787,10 @@ BB.gmap.controller.prototype.listeners = function()
 
 /**
 * Dynamically add a new element on the map.
-*
+* @param {String} type marker | polygon | line
+* @param {String} ident Whatever you want it to be
 */
-BB.gmap.controller.prototype.create_new = function( ident )
+BB.gmap.controller.prototype.create_new = function( type, ident )
 {
 	// Scope
 	var that = this;
@@ -798,31 +799,49 @@ BB.gmap.controller.prototype.create_new = function( ident )
 		ident = 'new_object';
 	}
 
-	var test = new BB.gmap.polygon(
-	{
-		editable: true,
-		styles : {
-		    strokeColor: '#99cc00',
-		    strokeOpacity: 0.8,
-		    strokeWeight: 3,
-		    fillColor: '#FF0000',
-		    fillOpacity: 0.35,
-			hover : {
-			    strokeColor: '#ffffff',
-			    strokeOpacity: 0.8,
-			    strokeWeight: 3,
-			    fillColor: '#000000',
-			    fillOpacity: 1
-			},
-			focused : {
-			    fillOpacity: 1
-			}
-		}
-	},
-	map);
+	// if (this.get_place( ident )) {
+		// Cannot create with existing ident
+	// 	return false;
+	// }
 
-	map.set_place('polygons', 'agna', test);
-	map.set_focus( test );
+	switch (type) {
+		case 'polygon':
+			var test = new BB.gmap.polygon(
+			{
+				editable: true,
+				styles : {
+				    strokeColor: '#99cc00',
+				    strokeOpacity: 0.8,
+				    strokeWeight: 3,
+				    fillColor: '#FF0000',
+				    fillOpacity: 0.35,
+					hover : {
+					    strokeColor: '#ffffff',
+					    strokeOpacity: 0.8,
+					    strokeWeight: 3,
+					    fillColor: '#000000',
+					    fillOpacity: 1
+					},
+					focused : {
+					    fillOpacity: 1
+					}
+				}
+			},
+			map);
+
+			map.set_place('polygons', 'agna', test);
+			map.set_focus( test );
+		break;
+		case 'line' :
+
+		break;
+
+		default:
+			this.set_data({ 'marker_creation': true })
+		break;
+
+	}
+
 }
 
 /**
@@ -833,6 +852,21 @@ BB.gmap.controller.prototype.create_new = function( ident )
 */
 BB.gmap.controller.prototype.map_click = function(event)
 {
+	// Scope
+	var that = this;
+	
+	if (this.data('marker_creation')) {
+		// Means we are adding markers.
+		var marker = new BB.gmap.marker({
+			coords : [ event.latLng.lat(), event.latLng.lng() ],
+			draggable: true
+		}, that);
+		console.log(marker);
+		this.set_data({ 'marker_creation' : false })
+
+		this.set_focus( marker );
+	}
+
 	// Focused item on the map (if any)
 	var focused = this.focused();
 
@@ -1465,7 +1499,6 @@ BB.gmap.marker.prototype.init = function()
 BB.gmap.marker.prototype.icon = function()
 {
 	if (!this.__ICON) {
-		this.error('No icon were defined yet.');
 		return new Image();
 	}
 	return this.__ICON;
@@ -2032,7 +2065,7 @@ BB.gmap.line.prototype.add_point = function(path, index)
 	}
 	paths = this.get_paths();
 
-
+	// If no index defined, add the point as the last point
 	if (typeof index != 'number') {
 		index = paths.length;
 	}

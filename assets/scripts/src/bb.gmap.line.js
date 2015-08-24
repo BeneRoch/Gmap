@@ -252,7 +252,7 @@ BB.gmap.line.prototype.add_point = function(path, index)
 	}
 	paths = this.get_paths();
 
-
+	// If no index defined, add the point as the last point
 	if (typeof index != 'number') {
 		index = paths.length;
 	}
