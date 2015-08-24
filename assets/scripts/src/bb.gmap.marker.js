@@ -212,6 +212,10 @@ BB.gmap.marker.prototype.display = function()
 	if (!this._listeners) {
 		this.listeners();
 		this._listeners = true;
+
+		if (typeof _data.loaded_callback === 'function') {
+			_data.loaded_callback( this );
+		}
 	}
 
 	return this;

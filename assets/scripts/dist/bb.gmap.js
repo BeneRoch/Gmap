@@ -1191,8 +1191,6 @@ function init_infoBox() {
 			this._div.style.top = (pixPosition.y + this._offsetY) + "px";
 			this._div.style.display = 'block';
 			this._div.style.zIndex = 1;
-
-			console.log(this._div);
 	};
 	BB.gmap.infobox.prototype.createElement = function() {
 		var panes = this.getPanes();
@@ -1236,7 +1234,6 @@ function init_infoBox() {
 	BB.gmap.infobox.prototype.panMap = function() {
 		// if we go beyond map, pan map
 
-		console.log( this );
 		var map = this.map;
 		var bounds = map.getBounds();
 		if (!bounds) return;
@@ -1645,6 +1642,10 @@ BB.gmap.marker.prototype.display = function()
 	if (!this._listeners) {
 		this.listeners();
 		this._listeners = true;
+
+		if (typeof _data.loaded_callback === 'function') {
+			_data.loaded_callback( this );
+		}
 	}
 
 	return this;

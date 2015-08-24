@@ -108,7 +108,11 @@
 		map.add_place_by_address('test_un_autre', '1859 iberville, montréal, qc, h2k3c4', {
 			type : 'marker',
 		    icon : 'assets/images/marker-tri.png',
-		    icon_selected : 'assets/images/marker-tri-selected.png'
+		    icon_selected : 'assets/images/marker-tri-selected.png',
+		    loaded_callback : function( obj ) {
+		    	console.log(obj.object().getPosition());
+		    	obj.controller().map().setCenter( obj.object().getPosition() );
+		    }
 		})
 		map.init();
 		map.set_styles([{"featureType":"all","elementType":"all","stylers":[{"saturation":-100},{"gamma":1.15}]},{"featureType":"administrative","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1},{"hue":"#00447b"}]},{"featureType":"administrative","elementType":"labels.icon","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.icon","stylers":[{"weight":0.1}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1}]},{"featureType":"all","elementType":"all","stylers":[{"lightness":-12}]}]);
