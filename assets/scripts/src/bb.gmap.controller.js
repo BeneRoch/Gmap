@@ -139,10 +139,11 @@ BB.gmap.controller.prototype.init = function()
 
 	// Any places yet?
 	if (typeof _data.places == 'undefined') {
+		// This might be an unnecessary error
 		this.error('You haven\'t set any places yet');
-		return this;
+	} else {
+		this.add_places( _data.places );
 	}
-	this.add_places( _data.places );
 
 	// Add listeners (map click)
 	this.listeners();
