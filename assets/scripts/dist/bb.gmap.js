@@ -28,7 +28,7 @@ var BB = BB || {};
 BB.base = function()
 {
 
-	this.__BB_DEBUG__	 = true;
+	this.__BB_DEBUG__	 = false;
 	this.__PROTECTED__   = [];
 
 	this._data = undefined;
@@ -827,10 +827,10 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 					}
 				}
 			},
-			map);
+			that);
 
-			map.set_place('polygons', 'agna', test);
-			map.set_focus( test );
+			that.set_place('polygons', 'agna', test);
+			that.set_focus( test );
 		break;
 		case 'line' :
 
@@ -854,7 +854,7 @@ BB.gmap.controller.prototype.map_click = function(event)
 {
 	// Scope
 	var that = this;
-	
+
 	if (this.data('marker_creation')) {
 		// Means we are adding markers.
 		var marker = new BB.gmap.marker({
