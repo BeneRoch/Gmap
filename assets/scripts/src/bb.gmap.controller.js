@@ -453,7 +453,7 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 
 	switch (type) {
 		case 'polygon':
-			var test = new BB.gmap.polygon(
+			var polygon = new BB.gmap.polygon(
 			{
 				editable: true,
 				styles : {
@@ -476,15 +476,39 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 			},
 			that);
 
-			that.set_place('polygons', 'agna', test);
-			that.set_focus( test );
+			that.set_place('polygons', ident, polygon);
+			that.set_focus( polygon );
 		break;
 		case 'line' :
+			var line = new BB.gmap.line(
+			{
+				editable: true,
+				styles : {
+				    strokeColor: '#99cc00',
+				    strokeOpacity: 0.8,
+				    strokeWeight: 3,
+				    fillColor: '#FF0000',
+				    fillOpacity: 0.35,
+					hover : {
+					    strokeColor: '#ffffff',
+					    strokeOpacity: 0.8,
+					    strokeWeight: 3,
+					    fillColor: '#000000',
+					    fillOpacity: 1
+					},
+					focused : {
+					    fillOpacity: 1
+					}
+				}
+			},
+			that);
 
+			that.set_place('lines', ident, line);
+			that.set_focus( line );
 		break;
 
 		default:
-			this.set_data({ 'marker_creation': true })
+			this.set_data({ 'marker_creation': ident });
 		break;
 
 	}
@@ -504,14 +528,16 @@ BB.gmap.controller.prototype.map_click = function(event)
 
 	if (this.data('marker_creation')) {
 		// Means we are adding markers.
-		var marker = new BB.gmap.marker({
+		this.add_place( this.data('marker_creation'), {
 			coords : [ event.latLng.lat(), event.latLng.lng() ],
-			draggable: true
-		}, that);
-		console.log(marker);
+			draggable: true,
+			type : 'marker'
+		});
+
+		this.set_focus( this.get_place( this.data('marker_creation') ) );
+
 		this.set_data({ 'marker_creation' : false })
 
-		this.set_focus( marker );
 	}
 
 	// Focused item on the map (if any)

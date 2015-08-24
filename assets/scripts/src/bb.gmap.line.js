@@ -264,7 +264,7 @@ BB.gmap.line.prototype.add_point = function(path, index)
 		var marker = new BB.gmap.marker({
 			coords : [ path.lat(), path.lng() ],
 			draggable: that.data('editable'),
-			ondragend : function(event) {
+			ondragend : function(controller, event) {
 				that.move_point( this.index, [ event.latLng.lat(), event.latLng.lng() ] );
 			},
 			index: index
