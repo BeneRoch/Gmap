@@ -575,6 +575,11 @@ BB.gmap.controller.prototype.set_place = function( type, ident, data )
 	if (typeof this.__PLACES[ type ][ ident ] == 'undefined') {
 		this.__PLACES[ type ][ ident ] = {};
 	}
+
+	// Remember ident at that point
+	// For export
+	data.set_ident( ident );
+
 	this.__PLACES[ type ][ ident ] = data;
 	return this;
 };
@@ -641,17 +646,6 @@ BB.gmap.controller.prototype.get_places = function()
 BB.gmap.controller.prototype.get_places_by_type = function(type)
 {
 	return this.__PLACES[ type ];
-};
-
-/**
-*
-*
-*/
-BB.gmap.controller.prototype.add_marker = function( ident, data )
-{
-	this.set_place('markers', ident, new BB.gmap.marker(data, this));
-	this.get_places_by_type('markers')[ ident ].set_ident('ident');
-	return this;
 };
 
 BB.gmap.controller.prototype.add_place_by_address = function( ident, address, data )
@@ -1076,6 +1070,11 @@ BB.gmap.controller.prototype.clusterer = function()
 	return this.__CLUSTERER;
 }
 
+/**
+* Export all contents on the map
+* You can use the exported data to load the map as last seen
+* @return {Object} BB.Gmap options
+*/
 BB.gmap.controller.prototype.export = function()
 {
 	var ret = this.data();
