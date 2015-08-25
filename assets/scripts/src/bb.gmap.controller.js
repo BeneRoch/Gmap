@@ -745,8 +745,6 @@ BB.gmap.controller.prototype.export = function()
 		ret[ 'places' ][ place.ident() ] = place.export();
 	});
 
-	console.log(JSON.stringify( ret ));
-
 	return ret;
 
 };
