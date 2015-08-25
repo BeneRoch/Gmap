@@ -721,3 +721,32 @@ BB.gmap.controller.prototype.clusterer = function()
 {
 	return this.__CLUSTERER;
 }
+
+BB.gmap.controller.prototype.export = function()
+{
+	var ret = this.data();
+
+	if (typeof ret.places != 'undefined') {
+		delete ret.places;
+	}
+
+	if (typeof ret.center != 'undefined') {
+		delete ret.center;
+	}
+
+	var center = this.map().getCenter();
+	ret.map.center.x = center.lat();
+	ret.map.center.y = center.lng();
+	ret.map.zoom = this.map().getZoom();
+
+	ret.places = {};
+
+	this._loop_all( function( place ) {
+		ret[ 'places' ][ place.ident() ] = place.export();
+	});
+
+	console.log(JSON.stringify( ret ));
+
+	return ret;
+
+};

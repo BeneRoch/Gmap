@@ -1075,6 +1075,35 @@ BB.gmap.controller.prototype.clusterer = function()
 {
 	return this.__CLUSTERER;
 }
+
+BB.gmap.controller.prototype.export = function()
+{
+	var ret = this.data();
+
+	if (typeof ret.places != 'undefined') {
+		delete ret.places;
+	}
+
+	if (typeof ret.center != 'undefined') {
+		delete ret.center;
+	}
+
+	var center = this.map().getCenter();
+	ret.map.center.x = center.lat();
+	ret.map.center.y = center.lng();
+	ret.map.zoom = this.map().getZoom();
+
+	ret.places = {};
+
+	this._loop_all( function( place ) {
+		ret[ 'places' ][ place.ident() ] = place.export();
+	});
+
+	console.log(JSON.stringify( ret ));
+
+	return ret;
+
+};
 /**
  * @name BB Gmap Infobox
  * @version version 1.0
@@ -1428,6 +1457,16 @@ BB.gmap.object.prototype.focus 			= function() { return this; };
 BB.gmap.object.prototype.blur 			= function() { return this; };
 BB.gmap.object.prototype.get_bounds 	= function() { return this; };
 BB.gmap.object.prototype.get_position 	= function() { return this; };
+
+
+/**
+* @see BB.gmap.controller.export
+* @return data
+*/
+BB.gmap.object.prototype.export = function()
+{
+	return this.data();
+};
 /**
  * @name BB Gmap controller
  * @version version 1.0
@@ -1711,6 +1750,7 @@ BB.gmap.marker.prototype.dragend = function(event)
 
 	if (typeof _data.ondragend == 'function') {
 		_data.ondragend( that, event );
+		that.set_data({ coords : [ event.latLng().lat, event.latLng().lng ]});
 	}
 
 	that.focus();
@@ -1838,6 +1878,7 @@ BB.gmap.marker.prototype.get_position = function()
 	array.push( position );
 	return array;
 };
+
 
 /**
  * @name BB Gmap Line
@@ -2117,6 +2158,8 @@ BB.gmap.line.prototype.add_point = function(path, index)
 		this.__MARKERS[ index ] = marker;
 	}
 
+	this.update_coords();
+
 	return this;
 };
 
@@ -2155,6 +2198,8 @@ BB.gmap.line.prototype.move_point = function( index, path )
 
 	paths.setAt( index, path );
 
+	this.update_coords();
+
 	return this;
 };
 
@@ -2187,6 +2232,8 @@ BB.gmap.line.prototype.remove_point = function( index )
 
 	this.redraw();
 
+
+	this.update_coords();
 	return this;
 };
 
@@ -2399,6 +2446,32 @@ BB.gmap.line.prototype.get_position = function()
 	return array;
 };
 
+/**
+* Make dure the coords data get's updated everytime it changes, for export
+* @return this (chainable)
+*/
+BB.gmap.line.prototype.update_coords = function()
+{
+	var paths = this.get_paths();
+	var ret = [];
+	paths.forEach(function( p ) {
+		ret.push( [ p.lat(), p.lng() ] );
+	});
+
+	this.set_data({ coords : ret });
+
+	return this;
+};
+
+
+/**
+* @see BB.gmap.controller.export
+* @return data
+*/
+BB.gmap.line.prototype.export = function()
+{
+	return this.data();
+};
 /**
  * @name BB Gmap Line
  * @version version 1.0

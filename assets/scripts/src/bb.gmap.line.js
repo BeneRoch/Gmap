@@ -276,6 +276,8 @@ BB.gmap.line.prototype.add_point = function(path, index)
 		this.__MARKERS[ index ] = marker;
 	}
 
+	this.update_coords();
+
 	return this;
 };
 
@@ -314,6 +316,8 @@ BB.gmap.line.prototype.move_point = function( index, path )
 
 	paths.setAt( index, path );
 
+	this.update_coords();
+
 	return this;
 };
 
@@ -346,6 +350,8 @@ BB.gmap.line.prototype.remove_point = function( index )
 
 	this.redraw();
 
+
+	this.update_coords();
 	return this;
 };
 
@@ -556,4 +562,31 @@ BB.gmap.line.prototype.get_position = function()
 	var array = new google.maps.MVCArray();
 	array.push(this.object().getPath());
 	return array;
+};
+
+/**
+* Make dure the coords data get's updated everytime it changes, for export
+* @return this (chainable)
+*/
+BB.gmap.line.prototype.update_coords = function()
+{
+	var paths = this.get_paths();
+	var ret = [];
+	paths.forEach(function( p ) {
+		ret.push( [ p.lat(), p.lng() ] );
+	});
+
+	this.set_data({ coords : ret });
+
+	return this;
+};
+
+
+/**
+* @see BB.gmap.controller.export
+* @return data
+*/
+BB.gmap.line.prototype.export = function()
+{
+	return this.data();
 };

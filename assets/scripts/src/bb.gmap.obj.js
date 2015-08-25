@@ -122,3 +122,13 @@ BB.gmap.object.prototype.focus 			= function() { return this; };
 BB.gmap.object.prototype.blur 			= function() { return this; };
 BB.gmap.object.prototype.get_bounds 	= function() { return this; };
 BB.gmap.object.prototype.get_position 	= function() { return this; };
+
+
+/**
+* @see BB.gmap.controller.export
+* @return data
+*/
+BB.gmap.object.prototype.export = function()
+{
+	return this.data();
+};
