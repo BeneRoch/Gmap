@@ -411,9 +411,6 @@ BB.gmap.controller = function(container, data)
 	// event to every children in 'places'
 	this.__EDITABLE = false;
 
-	// obsolete ?
-	this._MARKERS = {};
-
 	// all places are stucked there
 	// this allows a quick research by ident
 	this.__PLACES = {
@@ -773,9 +770,39 @@ BB.gmap.controller.prototype.translate_coords = function(coords) {
 */
 BB.gmap.controller.prototype.listeners = function()
 {
-	google.maps.event.clearListeners(this.map(), 'click');
+	// Scope
 	var that = this;
+
+	// Map click listeners
+	google.maps.event.clearListeners(this.map(), 'click');
 	google.maps.event.addListener(this.map(), 'click', function(event) { that.map_click(event); });
+
+
+	// Map keypress listeners
+    google.maps.event.addDomListener(document, 'keyup', function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+
+        console.log(code);
+        switch (code) {
+        	// Delete
+        	case 46:
+        		if (that.focused()) {
+        			// Remove focused item
+        			that.focused().delete();
+        		}
+        	break;
+
+        	case 27:
+        		if (that.focused()) {
+        			// Well blur actually
+        			that.remove_focus();
+        		}
+        	break;
+        }
+
+        // Delete : 46
+        // Escape : 27
+    });
 
 	return this;
 };
@@ -803,6 +830,7 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 		case 'polygon':
 			var polygon = new BB.gmap.polygon(
 			{
+				type : 'polygon',
 				editable: true,
 				styles : {
 				    strokeColor: '#99cc00',
@@ -830,6 +858,7 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 		case 'line' :
 			var line = new BB.gmap.line(
 			{
+				type : 'line',
 				editable: true,
 				styles : {
 				    strokeColor: '#99cc00',
@@ -1068,6 +1097,41 @@ BB.gmap.controller.prototype.set_clusterer = function( clusterer )
 BB.gmap.controller.prototype.clusterer = function()
 {
 	return this.__CLUSTERER;
+}
+
+/**
+* Delete a place from the controller
+* Method is used from BB.gmap.object.delete and shouldn't be called externally
+* @param {String} type marker | polygon | line
+* @param {String} ident Ident of the object
+* @return {Object} BB.Gmap options
+*/
+BB.gmap.controller.prototype._delete = function( type, ident )
+{
+
+	switch (type) {
+		case 'marker':
+			if (typeof this.__PLACES.markers[ ident ] === 'undefined') {
+				return false;
+			}
+			delete this.__PLACES.markers[ ident ];
+		break;
+
+		case 'line' :
+			if (typeof this.__PLACES.lines[ ident ] === 'undefined') {
+				return false;
+			}
+			delete this.__PLACES.lines[ ident ];
+		break;
+
+		case 'polygon':
+			if (typeof this.__PLACES.polygons[ ident ] === 'undefined') {
+				return false;
+			}
+			delete this.__PLACES.polygons[ ident ];
+		break;
+	}
+
 }
 
 /**
@@ -1436,6 +1500,33 @@ BB.gmap.object.prototype.hide = function()
 	return this;
 };
 
+/**
+* Deletes the object FOREVER
+* @return this (chainable)
+*/
+BB.gmap.object.prototype.delete = function()
+{
+	var _object = this.object();
+	if (typeof _object == 'undefined') {
+		this.error('No object defined at BB.gmap.object.delete()');
+		return this;
+	}
+	_object.setMap(null);
+
+	var _data = this.data();
+	if (typeof _data.ondelete === 'function') {
+		_data.ondelete( this );
+	}
+
+	// Delete by Ident
+	this.controller()._delete( this.data('type'), this.ident() );
+
+	// Deletion, remove from memory
+	delete _object;
+
+	return this;
+};
+
 
 /**
 * ABSTRACT METHODS
@@ -1747,7 +1838,7 @@ BB.gmap.marker.prototype.dragend = function(event)
 
 	if (typeof _data.ondragend == 'function') {
 		_data.ondragend( that, event );
-		that.set_data({ coords : [ event.latLng().lat, event.latLng().lng ]});
+		that.set_data({ coords : [ event.latLng.lat, event.latLng.lng ]});
 	}
 
 	that.focus();
@@ -1921,7 +2012,7 @@ BB.gmap.line = function( data, controller )
 	this.__PATHS = undefined;
 
 	// One marker per point to make it editable
-	this.__MARKERS = {};
+	this.__MARKERS = [];
 
 	// Call the supra class constructor with the arguments
 	// The controller and object are set in the BB.gmap.object Class
@@ -1993,13 +2084,13 @@ BB.gmap.line.prototype.redraw = function()
 	for (; i<total; i++) {
 		new_paths.push([ paths.getAt( i ).lat(), paths.getAt( i ).lng() ]);
 
-		if (typeof this.__MARKERS[ i ] != 'undefined') {
-			this.__MARKERS[ i ].hide();
-		}
+		// if (typeof this.__MARKERS[ i ] != 'undefined') {
+		// 	this.__MARKERS[ i ].hide();
+		// }
 	}
 
 	this.set_data({ paths : new_paths });
-	this.init();
+	// this.init();
 };
 
 
@@ -2143,8 +2234,14 @@ BB.gmap.line.prototype.add_point = function(path, index)
 		var marker = new BB.gmap.marker({
 			coords : [ path.lat(), path.lng() ],
 			draggable: that.data('editable'),
-			ondragend : function(controller, event) {
-				that.move_point( this.index, [ event.latLng.lat(), event.latLng.lng() ] );
+			ondragend : function(marker, event) {
+				that.move_point( marker.object().index, [ event.latLng.lat(), event.latLng.lng() ] );
+			},
+			ondelete : function ( marker ) {
+				that.remove_point( marker.object().index );
+				if (!that.get_paths().length) {
+					that.delete();
+				}
 			},
 			index: index
 		}, that.controller());
@@ -2210,7 +2307,7 @@ BB.gmap.line.prototype.remove_point = function( index )
 	var paths = this.get_paths();
 	if (typeof paths != 'object') {
 		// How can you move something inexistant?
-		this.error('You can not move a point when no path is given at BB.gmap.line.move_point( index, path )');
+		this.error('You can not move a point when no path is given at BB.gmap.line.remove_point( index, path )');
 		return false;
 	}
 
@@ -2224,7 +2321,7 @@ BB.gmap.line.prototype.remove_point = function( index )
 
 	var _m = this.__MARKERS;
 	for (var i in _m) {
-		_m[ i ].marker().index = parseInt( i );
+		_m[ i ].object().index = parseInt( i );
 	}
 
 	this.redraw();
@@ -2293,6 +2390,9 @@ BB.gmap.line.prototype.listeners = function()
 	google.maps.event.addListener( that.object(), 'mouseover', that.mouse_over );
 	google.maps.event.addListener( that.object(), 'mouseout', that.mouse_out );
 	google.maps.event.addListener( that.object(), 'click', that.click );
+
+
+
 };
 
 /**

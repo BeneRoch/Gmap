@@ -10,20 +10,111 @@
 	var map;
 	function initialize()
 	{
-		map = new BB.gmap.controller(document.getElementById('test'), {"use_clusterer":true,"map":{"center":{"G":45.52804177489966,"K":-73.65535402075346,"x":45.50928198433473,"y":-73.83346879259642},"zoom":14,"mapType":"roadmap","coordsType":"inpage","map_mode":"default","mapTypeId":"roadmap","styles":[{"featureType":"all","elementType":"all","stylers":[{"saturation":-100},{"gamma":1.15}]},{"featureType":"administrative","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1},{"hue":"#00447b"}]},{"featureType":"administrative","elementType":"labels.icon","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.icon","stylers":[{"weight":0.1}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1}]},{"featureType":"all","elementType":"all","stylers":[{"lightness":-12}]}]},"places":{"test":{"categories":"test,test1,test2","type":"marker","icon":{"path":"M 125,5 155,90 245,90 175,145 200,230 125,180 50,230 75,145 5,90 95,90 z","fillColor":"yellow","icons":[{"icon":"http://localhost/pincourt/www/modules/pincourt/assets/images/svgs/map-marker.svg","offset":"50%"}],"fillOpacity":0.8,"scale":1,"strokeColor":"gold","strokeWeight":14,"height":"20px","width":"20px","anchor":{"x":10,"y":20}},"coords":[45.577997,-73.76850009999998],"draggable":true,"infobox":"agna","ident":"test"},"test_un_autre":{"type":"marker","icon":"assets/images/marker-tri.png","icon_selected":"assets/images/marker-tri-selected.png","coords":[45.5320891,-73.55170809999998],"ident":"test_un_autre"},"polygon":{"categories":"test","type":"polygon","paths":[[37.272323,-122.214897],[21.191982,-197.821856],[-18.142599,138.431]],"styles":{"strokeColor":"#99cc00","strokeOpacity":0.8,"strokeWeight":3,"fillColor":"#FF0000","fillOpacity":0.35,"hover":{"strokeColor":"#ffffff","strokeOpacity":0.8,"strokeWeight":3,"fillColor":"#000000","fillOpacity":1},"focused":{"fillOpacity":1},"visible":true},"ident":"polygon","coords":[[37.272323,-122.21489700000001],[21.191982,162.17814399999997],[-18.142599,138.43100000000004]]},"line":{"type":"line","paths":[[37.772323,-122.214897],[21.291982,-157.821856],[-18.142599,178.431]],"styles":{"strokeColor":"#99cc00","strokeOpacity":0.8,"strokeWeight":3,"fillColor":"#FF0000","fillOpacity":0.35,"hover":{"strokeColor":"#ffffff","strokeOpacity":0.8,"strokeWeight":3,"fillColor":"#000000","fillOpacity":1},"focused":{"fillOpacity":1},"path":{"j":[{"G":37.772323,"K":-122.21489700000001},{"G":21.291982,"K":-157.82185600000003},{"G":-18.142599,"K":178.43100000000004}],"gm_accessors_":{"length":null},"length":3,"gm_bindings_":{"length":{}}},"visible":true},"ident":"line","coords":[[37.772323,-122.21489700000001],[21.291982,-157.82185600000003],[-18.142599,178.43100000000004]]}}})
+		map = new BB.gmap.controller(document.getElementById('test'), {
+			use_clusterer: true,
+		   	map: {
+	  			center: {
+					x 	: 45.3712923,
+					y 	: -73.9820994
+				},
+				zoom: 14,
+				mapType 	: 'roadmap',
+				coordsType	: 'inpage', // array, json? (vs ul li)
+				map_mode	: 'default'
+			},
+			places :{
+				test : {
+					categories: 'test,test1,test2',
+					type : 'marker',
+		            icon : {
+						path: 'M 125,5 155,90 245,90 175,145 200,230 125,180 50,230 75,145 5,90 95,90 z',
+						fillColor: 'yellow',
+						icons : [{
+							icon: "http://localhost/pincourt/www/modules/pincourt/assets/images/svgs/map-marker.svg",
+							offset: '50%'
+						}],
+						fillOpacity: 0.8,
+						scale: 1,
+						strokeColor: 'gold',
+						strokeWeight: 14,
+						height: '20px',
+						width: '20px'
+					},
+					coords : [ 45.577997,-73.76850009999998 ],
+					draggable: true,
+					infobox: 'agna'
+				},
+				line : {
+					type : 'line',
+					paths: [
+						[37.772323, -122.214897],
+						[21.291982, -157.821856],
+						[-18.142599, 178.431]
+					],
+					onmouseover: function(object, event) {
+
+					},
+					styles : {
+					    strokeColor: '#99cc00',
+					    strokeOpacity: 0.8,
+					    strokeWeight: 3,
+					    fillColor: '#FF0000',
+					    fillOpacity: 0.35,
+						hover : {
+						    strokeColor: '#ffffff',
+						    strokeOpacity: 0.8,
+						    strokeWeight: 3,
+						    fillColor: '#000000',
+						    fillOpacity: 1
+						},
+						focused : {
+						    fillOpacity: 1
+						}
+					}
+				},
+				polygon : {
+					categories: 'test',
+					type : 'polygon',
+					paths: [
+						[37.272323, -122.214897],
+						[21.191982, -197.821856],
+						[-18.142599, 138.431]
+					],
+					onmouseover: function(object, event) {
+
+					},
+					styles : {
+					    strokeColor: '#99cc00',
+					    strokeOpacity: 0.8,
+					    strokeWeight: 3,
+					    fillColor: '#FF0000',
+					    fillOpacity: 0.35,
+						hover : {
+						    strokeColor: '#ffffff',
+						    strokeOpacity: 0.8,
+						    strokeWeight: 3,
+						    fillColor: '#000000',
+						    fillOpacity: 1
+						},
+						focused : {
+						    fillOpacity: 1
+						}
+					}
+				}
+			}
+		})
 
 
-		// map.add_place_by_address('test_un_autre', '1859 iberville, montréal, qc, h2k3c4', {
-		// 	type : 'marker',
-		//     icon : 'assets/images/marker-tri.png',
-		//     icon_selected : 'assets/images/marker-tri-selected.png',
-		//     loaded_callback : function( obj ) {
-		//     	console.log(obj.object().getPosition());
-		//     	obj.controller().map().setCenter( obj.object().getPosition() );
-		//     }
-		// })
+		map.add_place_by_address('test_un_autre', '1859 iberville, montréal, qc, h2k3c4', {
+			type : 'marker',
+		    icon : 'assets/images/marker-tri.png',
+		    icon_selected : 'assets/images/marker-tri-selected.png',
+		    loaded_callback : function( obj ) {
+		    	obj.controller().map().setCenter( obj.object().getPosition() );
+		    }
+		})
 		map.init();
-		// map.set_styles([{"featureType":"all","elementType":"all","stylers":[{"saturation":-100},{"gamma":1.15}]},{"featureType":"administrative","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1},{"hue":"#00447b"}]},{"featureType":"administrative","elementType":"labels.icon","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.icon","stylers":[{"weight":0.1}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1}]},{"featureType":"all","elementType":"all","stylers":[{"lightness":-12}]}]);
+		map.set_styles([{"featureType":"all","elementType":"all","stylers":[{"saturation":-100},{"gamma":1.15}]},{"featureType":"administrative","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1},{"hue":"#00447b"}]},{"featureType":"administrative","elementType":"labels.icon","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.icon","stylers":[{"weight":0.1}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1}]},{"featureType":"all","elementType":"all","stylers":[{"lightness":-12}]}]);
 
 
 	}

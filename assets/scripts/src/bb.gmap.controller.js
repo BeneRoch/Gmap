@@ -57,9 +57,6 @@ BB.gmap.controller = function(container, data)
 	// event to every children in 'places'
 	this.__EDITABLE = false;
 
-	// obsolete ?
-	this._MARKERS = {};
-
 	// all places are stucked there
 	// this allows a quick research by ident
 	this.__PLACES = {
@@ -419,9 +416,38 @@ BB.gmap.controller.prototype.translate_coords = function(coords) {
 */
 BB.gmap.controller.prototype.listeners = function()
 {
-	google.maps.event.clearListeners(this.map(), 'click');
+	// Scope
 	var that = this;
+
+	// Map click listeners
+	google.maps.event.clearListeners(this.map(), 'click');
 	google.maps.event.addListener(this.map(), 'click', function(event) { that.map_click(event); });
+
+
+	// Map keypress listeners
+    google.maps.event.addDomListener(document, 'keyup', function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+
+        switch (code) {
+        	// Delete
+        	case 46:
+        		if (that.focused()) {
+        			// Remove focused item
+        			that.focused().delete();
+        		}
+        	break;
+
+        	case 27:
+        		if (that.focused()) {
+        			// Well blur actually
+        			that.remove_focus();
+        		}
+        	break;
+        }
+
+        // Delete : 46
+        // Escape : 27
+    });
 
 	return this;
 };
@@ -449,6 +475,7 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 		case 'polygon':
 			var polygon = new BB.gmap.polygon(
 			{
+				type : 'polygon',
 				editable: true,
 				styles : {
 				    strokeColor: '#99cc00',
@@ -476,6 +503,7 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 		case 'line' :
 			var line = new BB.gmap.line(
 			{
+				type : 'line',
 				editable: true,
 				styles : {
 				    strokeColor: '#99cc00',
@@ -714,6 +742,41 @@ BB.gmap.controller.prototype.set_clusterer = function( clusterer )
 BB.gmap.controller.prototype.clusterer = function()
 {
 	return this.__CLUSTERER;
+}
+
+/**
+* Delete a place from the controller
+* Method is used from BB.gmap.object.delete and shouldn't be called externally
+* @param {String} type marker | polygon | line
+* @param {String} ident Ident of the object
+* @return {Object} BB.Gmap options
+*/
+BB.gmap.controller.prototype._delete = function( type, ident )
+{
+
+	switch (type) {
+		case 'marker':
+			if (typeof this.__PLACES.markers[ ident ] === 'undefined') {
+				return false;
+			}
+			delete this.__PLACES.markers[ ident ];
+		break;
+
+		case 'line' :
+			if (typeof this.__PLACES.lines[ ident ] === 'undefined') {
+				return false;
+			}
+			delete this.__PLACES.lines[ ident ];
+		break;
+
+		case 'polygon':
+			if (typeof this.__PLACES.polygons[ ident ] === 'undefined') {
+				return false;
+			}
+			delete this.__PLACES.polygons[ ident ];
+		break;
+	}
+
 }
 
 /**

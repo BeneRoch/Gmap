@@ -104,6 +104,33 @@ BB.gmap.object.prototype.hide = function()
 	return this;
 };
 
+/**
+* Deletes the object FOREVER
+* @return this (chainable)
+*/
+BB.gmap.object.prototype.delete = function()
+{
+	var _object = this.object();
+	if (typeof _object == 'undefined') {
+		this.error('No object defined at BB.gmap.object.delete()');
+		return this;
+	}
+	_object.setMap(null);
+
+	var _data = this.data();
+	if (typeof _data.ondelete === 'function') {
+		_data.ondelete( this );
+	}
+
+	// Delete by Ident
+	this.controller()._delete( this.data('type'), this.ident() );
+
+	// Deletion, remove from memory
+	delete _object;
+
+	return this;
+};
+
 
 /**
 * ABSTRACT METHODS

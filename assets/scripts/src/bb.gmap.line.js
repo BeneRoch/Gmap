@@ -42,7 +42,7 @@ BB.gmap.line = function( data, controller )
 	this.__PATHS = undefined;
 
 	// One marker per point to make it editable
-	this.__MARKERS = {};
+	this.__MARKERS = [];
 
 	// Call the supra class constructor with the arguments
 	// The controller and object are set in the BB.gmap.object Class
@@ -114,13 +114,13 @@ BB.gmap.line.prototype.redraw = function()
 	for (; i<total; i++) {
 		new_paths.push([ paths.getAt( i ).lat(), paths.getAt( i ).lng() ]);
 
-		if (typeof this.__MARKERS[ i ] != 'undefined') {
-			this.__MARKERS[ i ].hide();
-		}
+		// if (typeof this.__MARKERS[ i ] != 'undefined') {
+		// 	this.__MARKERS[ i ].hide();
+		// }
 	}
 
 	this.set_data({ paths : new_paths });
-	this.init();
+	// this.init();
 };
 
 
@@ -264,8 +264,14 @@ BB.gmap.line.prototype.add_point = function(path, index)
 		var marker = new BB.gmap.marker({
 			coords : [ path.lat(), path.lng() ],
 			draggable: that.data('editable'),
-			ondragend : function(controller, event) {
-				that.move_point( this.index, [ event.latLng.lat(), event.latLng.lng() ] );
+			ondragend : function(marker, event) {
+				that.move_point( marker.object().index, [ event.latLng.lat(), event.latLng.lng() ] );
+			},
+			ondelete : function ( marker ) {
+				that.remove_point( marker.object().index );
+				if (!that.get_paths().length) {
+					that.delete();
+				}
 			},
 			index: index
 		}, that.controller());
@@ -331,7 +337,7 @@ BB.gmap.line.prototype.remove_point = function( index )
 	var paths = this.get_paths();
 	if (typeof paths != 'object') {
 		// How can you move something inexistant?
-		this.error('You can not move a point when no path is given at BB.gmap.line.move_point( index, path )');
+		this.error('You can not move a point when no path is given at BB.gmap.line.remove_point( index, path )');
 		return false;
 	}
 
@@ -345,7 +351,7 @@ BB.gmap.line.prototype.remove_point = function( index )
 
 	var _m = this.__MARKERS;
 	for (var i in _m) {
-		_m[ i ].marker().index = parseInt( i );
+		_m[ i ].object().index = parseInt( i );
 	}
 
 	this.redraw();
@@ -414,6 +420,9 @@ BB.gmap.line.prototype.listeners = function()
 	google.maps.event.addListener( that.object(), 'mouseover', that.mouse_over );
 	google.maps.event.addListener( that.object(), 'mouseout', that.mouse_out );
 	google.maps.event.addListener( that.object(), 'click', that.click );
+
+
+
 };
 
 /**
