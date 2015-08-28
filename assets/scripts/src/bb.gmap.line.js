@@ -597,5 +597,10 @@ BB.gmap.line.prototype.update_coords = function()
 */
 BB.gmap.line.prototype.export = function()
 {
+	var _data = this.data();
+	// At this point, we do not need these
+	if (typeof _data.styles.path != 'undefined') {
+		delete _data.styles.path;
+	}
 	return this.data();
 };
