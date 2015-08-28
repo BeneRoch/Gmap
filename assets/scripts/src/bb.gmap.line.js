@@ -585,7 +585,7 @@ BB.gmap.line.prototype.update_coords = function()
 		ret.push( [ p.lat(), p.lng() ] );
 	});
 
-	this.set_data({ coords : ret });
+	this.set_data({ paths : ret });
 
 	return this;
 };
