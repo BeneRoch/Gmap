@@ -218,6 +218,12 @@ BB.gmap.marker.prototype.display = function()
 		}
 	}
 
+	// From BB.gmap.line
+	// If hidden, don't show it yet.
+	if (this.data('hidden')) {
+		this.hide();
+	}
+
 	return this;
 };
 

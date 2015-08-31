@@ -211,6 +211,8 @@ BB.gmap.line.prototype.display = function()
 
 	this.set_map(this.controller().map());
 
+	this.update_coords();
+
 	return this;
 };
 
@@ -259,30 +261,31 @@ BB.gmap.line.prototype.add_point = function(path, index)
 
 	paths.insertAt(index, path);
 
-	if (that.data('editable')) {
-		// Add marker on top of it
-		var marker = new BB.gmap.marker({
-			coords : [ path.lat(), path.lng() ],
-			draggable: that.data('editable'),
-			ondragend : function(marker, event) {
-				that.move_point( marker.object().index, [ event.latLng.lat(), event.latLng.lng() ] );
-			},
-			ondelete : function ( marker ) {
-				that.remove_point( marker.object().index );
-				if (!that.get_paths().length) {
-					that.delete();
-				}
-			},
-			index: index
-		}, that.controller());
+	// Add marker on top of it
+	var marker = new BB.gmap.marker({
+		coords : [ path.lat(), path.lng() ],
+		draggable: true, // The whole point of these.
+		icon: 'assets/images/marker-tri.png',
+		hidden: !(this.data('editable')),
+		editable: true,
+		ondragend : function(marker, event) {
+			that.move_point( marker.object().index, [ event.latLng.lat(), event.latLng.lng() ] );
+		},
+		ondelete : function ( marker ) {
+			that.remove_point( marker.object().index );
+			that.focus();
 
-		if (!this.__MARKERS) {
-			this.__MARKERS = [];
-		}
-		this.__MARKERS[ index ] = marker;
+			if (!that.get_paths().length) {
+				that.delete();
+			}
+		},
+		index: index
+	}, that.controller());
+
+	if (!this.__MARKERS) {
+		this.__MARKERS = [];
 	}
-
-	this.update_coords();
+	this.__MARKERS[ index ] = marker;
 
 	return this;
 };
@@ -370,16 +373,52 @@ BB.gmap.line.prototype.set_editable = function(param)
 	if (!param) {
 		this.set_data({ 'editable' : false });
 		// this.controller().set_editable(false);
+		this.hide_markers();
+		// No need to remove focus here
 		return this;
 	}
 
 	// Add listeners and stuff
 	this.set_data({ 'editable' : true });
+	this.show_markers();
+	// Add focus when setting editable.
+	this.focus();
 
 	return this;
 
 };
 
+/**
+* Show all markers
+* return this (chainable)
+*/
+BB.gmap.line.prototype.show_markers = function()
+{
+	for (var i = 0; i < this.__MARKERS.length; i++) {
+		this.__MARKERS[ i ].show();
+	}
+
+	return this;
+}
+
+/**
+* Hide all markers
+* return this (chainable)
+*/
+BB.gmap.line.prototype.hide_markers = function()
+{
+	var focused = this.controller().focused();
+
+	for (var i = 0; i < this.__MARKERS.length; i++) {
+		this.__MARKERS[ i ].hide();
+	}
+
+	return this;
+}
+
+/**
+* Adds point on map click
+*/
 BB.gmap.line.prototype.map_click = function(event)
 {
 	this.add_point(event.latLng);
@@ -514,6 +553,7 @@ BB.gmap.line.prototype.click = function( event )
 
 };
 
+
 /**
 * Set focus on the current item, tell so to the controller
 * @return this (chainable)
@@ -527,6 +567,11 @@ BB.gmap.line.prototype.focus = function()
 	}
 	this.controller().set_focus( this );
 
+	// Markers when selected AND editable
+	if (this.data('editable')) {
+		this.show_markers();
+	}
+
 	return this;
 };
 
@@ -537,6 +582,9 @@ BB.gmap.line.prototype.focus = function()
 BB.gmap.line.prototype.blur = function()
 {
 	this.set_styles( this.get_data('styles') );
+
+	// No markers when not selected
+	// this.hide_markers();
 
 	return this;
 };
@@ -603,4 +651,21 @@ BB.gmap.line.prototype.export = function()
 		delete _data.styles.path;
 	}
 	return this.data();
+};
+
+BB.gmap.line.prototype.delete = function()
+{
+	var i = 0;
+	var total = this.__MARKERS.length;
+	if (total) {
+		for (; i < total; i++) {
+			this.remove_point( i );
+		}
+	}
+
+	// Index stuff before doesn't seem to work.
+	this.hide_markers();
+
+	// Parent
+	BB.gmap.object.prototype.delete.call(this);
 };

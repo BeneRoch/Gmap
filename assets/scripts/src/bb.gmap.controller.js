@@ -433,7 +433,10 @@ BB.gmap.controller.prototype.listeners = function()
         	case 46:
         		if (that.focused()) {
         			// Remove focused item
-        			that.focused().delete();
+        			if (that.focused().data('editable')) {
+	        			that.focused().delete();
+        				that.remove_focus();
+	        		}
         		}
         	break;
 
