@@ -476,11 +476,10 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 
 	switch (type) {
 		case 'polygon':
-			var polygon = new BB.gmap.polygon(
-			{
-				type : 'polygon',
-				editable: true,
-				styles : {
+
+			var styles = this.data('default_styles');
+			if (!styles) {
+				styles = {
 				    strokeColor: '#99cc00',
 				    strokeOpacity: 0.8,
 				    strokeWeight: 3,
@@ -496,9 +495,15 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 					focused : {
 					    fillOpacity: 1
 					}
-				}
-			},
-			that);
+				};
+			}
+			var opts = {
+				type : 'polygon',
+				editable: true,
+				styles: styles
+			}
+			var polygon = new BB.gmap.polygon(opts, that);
+
 
 			that.set_place('polygons', ident, polygon);
 			that.set_focus( polygon );

@@ -645,6 +645,8 @@ BB.gmap.line.prototype.update_coords = function()
 */
 BB.gmap.line.prototype.export = function()
 {
+	this.update_coords();
+
 	var _data = this.data();
 	// At this point, we do not need these
 	if (typeof _data.styles.path != 'undefined') {

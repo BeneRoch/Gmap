@@ -11,6 +11,23 @@
 	function initialize()
 	{
 		map = new BB.gmap.controller(document.getElementById('test'), {
+			default_styles: {
+			    strokeColor: '#000000',
+			    strokeOpacity: 0.8,
+			    strokeWeight: 3,
+			    fillColor: '#ffffff',
+			    fillOpacity: 0.35,
+				hover : {
+				    strokeColor: '#000000',
+				    strokeOpacity: 1,
+				    strokeWeight: 2,
+				    fillColor: '#ffffff',
+				    fillOpacity: 0.5
+				},
+				focused : {
+				    fillOpacity: 0.8
+				}
+			},
 			use_clusterer: true,
 		   	map: {
 	  			center: {
