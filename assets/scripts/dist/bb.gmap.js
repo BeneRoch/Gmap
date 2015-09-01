@@ -718,27 +718,40 @@ BB.gmap.controller.prototype.remove_focus = function()
 {
 	var focused = this.focused();
 	if (focused) {
+
+		if (typeof this.data('onblur') === 'function') {
+			var func = this.data('onblur');
+			func( focused, this );
+		}
+
 		focused.blur();
 		this.__FOCUSED_ITEM = undefined;
 	}
+
 
 	return this;
 };
 
 /**
-*
+* @callback onfocus( item, controller )
 * @param {BB.gmap.object} item
+* @return this (chainable)
 */
 BB.gmap.controller.prototype.set_focus = function( item )
 {
-	var _data = item.data();
+	console.log('focusing this: ', item);
+	// First, remove focus
+	this.remove_focus();
 
-	var focused = this.focused();
-	if (focused && (focused != item)) {
-		focused.blur();
+	// Set focus on new item
+	this.__FOCUSED_ITEM = item;
+
+	if (typeof this.data('onfocus') === 'function') {
+		var func = this.data('onfocus');
+		func( item, this );
 	}
 
-	this.__FOCUSED_ITEM = item;
+	return this;
 };
 
 /**
@@ -886,8 +899,27 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 }
 
 /**
+* Sets the data in a kinda magic way...
+* Not really usefull, except you can add new event easily
+* @param string event (1 event at a time)
+* @param function the actual function
+* @return this (chainable)
+*/
+BB.gmap.controller.prototype.on = function( ev, func )
+{
+	var key = 'on'+ev;
+	var data = {};
+	data[ key ] = func;
+	this.set_data( data )
+}
+
+/**
 * Listeners for map click
 * This is where everything happen to have a single click event on the map
+*
+* Callbacks:
+* marker_creation_callback
+*
 * @param event google map event
 * @return this (chainable)
 */
@@ -895,6 +927,7 @@ BB.gmap.controller.prototype.map_click = function(event)
 {
 	// Scope
 	var that = this;
+
 
 	if (this.data('marker_creation')) {
 		// Means we are adding markers.
@@ -906,7 +939,13 @@ BB.gmap.controller.prototype.map_click = function(event)
 
 		this.set_focus( this.get_place( this.data('marker_creation') ) );
 
-		this.set_data({ 'marker_creation' : false })
+		if (typeof this.data('marker_creation_callback') === 'function') {
+			var func = this.data('marker_creation_callback');
+			func( this.get_place( this.data('marker_creation') ) );
+		}
+
+
+		this.set_data({ 'marker_creation' : false });
 
 	}
 
@@ -917,11 +956,14 @@ BB.gmap.controller.prototype.map_click = function(event)
 		return this;
 	}
 
+	// Edit OR get out of focus
 	if (focused.data('editable')) {
 		focused.map_click( event );
 	} else {
 		this.remove_focus();
 	}
+
+
 
 	return this;
 
