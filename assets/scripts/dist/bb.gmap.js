@@ -828,29 +828,30 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 	// 	return false;
 	// }
 
+	var styles = this.data('default_styles');
+	if (!styles) {
+		styles = {
+		    strokeColor: '#000000',
+		    strokeOpacity: 0.8,
+		    strokeWeight: 2,
+		    fillColor: '#FFFFFF',
+		    fillOpacity: 0.35,
+			hover : {
+			    strokeColor: '#000000',
+			    strokeOpacity: 0.8,
+			    strokeWeight: 2,
+			    fillColor: '#FFFFFF',
+			    fillOpacity: 1
+			},
+			focused : {
+			    fillOpacity: 1
+			}
+		};
+	}
+
 	switch (type) {
 		case 'polygon':
 
-			var styles = this.data('default_styles');
-			if (!styles) {
-				styles = {
-				    strokeColor: '#99cc00',
-				    strokeOpacity: 0.8,
-				    strokeWeight: 3,
-				    fillColor: '#FF0000',
-				    fillOpacity: 0.35,
-					hover : {
-					    strokeColor: '#ffffff',
-					    strokeOpacity: 0.8,
-					    strokeWeight: 3,
-					    fillColor: '#000000',
-					    fillOpacity: 1
-					},
-					focused : {
-					    fillOpacity: 1
-					}
-				};
-			}
 			var opts = {
 				type : 'polygon',
 				editable: true,
@@ -863,29 +864,14 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 			that.set_focus( polygon );
 		break;
 		case 'line' :
-			var line = new BB.gmap.line(
-			{
+
+			var opts = {
 				type : 'line',
 				editable: true,
-				styles : {
-				    strokeColor: '#99cc00',
-				    strokeOpacity: 0.8,
-				    strokeWeight: 3,
-				    fillColor: '#FF0000',
-				    fillOpacity: 0.35,
-					hover : {
-					    strokeColor: '#ffffff',
-					    strokeOpacity: 0.8,
-					    strokeWeight: 3,
-					    fillColor: '#000000',
-					    fillOpacity: 1
-					},
-					focused : {
-					    fillOpacity: 1
-					}
-				}
-			},
-			that);
+				styles: styles
+			}
+			var polygon = new BB.gmap.line(opts, that);
+
 
 			that.set_place('lines', ident, line);
 			that.set_focus( line );
