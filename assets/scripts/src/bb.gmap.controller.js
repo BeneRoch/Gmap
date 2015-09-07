@@ -528,7 +528,7 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 				editable: true,
 				styles: styles
 			}
-			var polygon = new BB.gmap.line(opts, that);
+			var line = new BB.gmap.line(opts, that);
 
 
 			that.set_place('lines', ident, line);
