@@ -265,7 +265,13 @@ BB.gmap.line.prototype.add_point = function(path, index)
 	var marker = new BB.gmap.marker({
 		coords : [ path.lat(), path.lng() ],
 		draggable: true, // The whole point of these.
-		icon: 'assets/images/marker-tri.png',
+
+		// icon: 'assets/images/marker-tri.png',
+		icon : {
+			path: google.maps.SymbolPath.CIRCLE,
+			scale: 4
+		},
+
 		hidden: !(this.data('editable')),
 		editable: true,
 		ondragend : function(marker, event) {
