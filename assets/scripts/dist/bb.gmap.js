@@ -1027,6 +1027,7 @@ BB.gmap.controller.prototype.map_click = function(event)
 		this.add_place( this.data('marker_creation'), {
 			coords : [ event.latLng.lat(), event.latLng.lng() ],
 			draggable: true,
+			editable: true,
 			type : 'marker'
 		});
 
