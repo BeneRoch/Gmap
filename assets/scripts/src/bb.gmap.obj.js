@@ -17,6 +17,8 @@ BB.gmap.object = function( data, controller )
 
 	this.init();
 
+	this.controller().loading_place( this.ident() );
+
 	return this;
 }
 BB.gmap.object.prototype = new BB.base();

@@ -216,6 +216,8 @@ BB.gmap.marker.prototype.display = function()
 		if (typeof _data.loaded_callback === 'function') {
 			_data.loaded_callback( this );
 		}
+
+		this.controller().place_loaded( this );
 	}
 
 	// From BB.gmap.line
@@ -411,6 +413,11 @@ BB.gmap.marker.prototype.get_position = function()
 {
 	var position = new google.maps.MVCArray();
 	var array = new google.maps.MVCArray();
+
+	if (!this.object()) {
+		return false;
+	}
+
 	position.push( this.object().getPosition() );
 	array.push( position );
 	return array;

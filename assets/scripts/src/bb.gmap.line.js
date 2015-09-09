@@ -91,6 +91,7 @@ BB.gmap.line.prototype.init = function()
 	}
 
 	this.listeners();
+	this.controller().place_loaded( this );
 	return this;
 };
 
@@ -120,6 +121,7 @@ BB.gmap.line.prototype.redraw = function()
 	}
 
 	this.set_data({ paths : new_paths });
+
 	// this.init();
 };
 

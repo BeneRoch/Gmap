@@ -447,6 +447,97 @@ BB.gmap.controller.prototype.map = function()
 };
 
 /**
+* When adding new place, tell the controller
+* Thats means some places are still loading
+*/
+BB.gmap.controller.prototype.loading_place = function( ident )
+{
+	var obj = this.get_place( ident );
+	if (!obj) {
+		return this;
+	}
+
+	obj.set_data({ loaded : false });
+
+	return this;
+}
+
+/**
+*
+*/
+BB.gmap.controller.prototype.place_loaded = function( obj )
+{
+	if (!obj) {
+		return this;
+	}
+
+	// Keep that in mind
+	obj.set_data({ loaded : true });
+
+	if (this.check_loaded_places()) {
+		this._ready();
+	}
+
+	return this;
+
+}
+
+
+/**
+* @return {Boolean} All places loaded.
+*/
+BB.gmap.controller.prototype.check_loaded_places = function()
+{
+
+	var all_loaded = true;
+
+	this._loop_all( function( obj ) {
+		all_loaded = !!( all_loaded && obj.data('loaded') );
+	});
+
+	// Make sure EVERYTHING is ready.
+	all_loaded = ( all_loaded && this.data('tiles_loaded') );
+
+	return all_loaded;
+}
+
+
+/**
+*
+*
+*/
+BB.gmap.controller.prototype.ready = function( callback ) {
+	if (typeof callback == 'function') {
+		this.set_data({ map_ready : callback });
+	}
+
+	return this;
+}
+
+
+/**
+* When EVERYTHING is loaded on the map
+* Called ONCE after init
+*/
+BB.gmap.controller.prototype._ready = function()
+{
+	var _data = this.data();
+
+	// Already loaded
+	if (this.data('loaded')) {
+		return this;
+	}
+
+	// Call the function ready
+	if (typeof _data.map_ready == 'function') {
+		_data.map_ready( this );
+	}
+
+	// chainable
+	return this;
+};
+
+/**
 * Helper
 * Kind of does same thing but on the map object
 * You can always object.map().[methods]()
@@ -789,6 +880,9 @@ BB.gmap.controller.prototype.listeners = function()
 	google.maps.event.clearListeners(this.map(), 'click');
 	google.maps.event.addListener(this.map(), 'click', function(event) { that.map_click(event); });
 
+	google.maps.event.addListenerOnce(this.map(), "tilesloaded", function(e) {
+		that.set_data({ 'tiles_loaded' : true });
+	});
 
 	// Map keypress listeners
     google.maps.event.addDomListener(document, 'keyup', function (e) {
@@ -1061,6 +1155,9 @@ BB.gmap.controller.prototype.fit_bounds = function()
 	this._loop_all( function( obj )
 	{
 		var paths = obj.get_position();
+		if (!paths) {
+			return false;
+		}
    		var path;
 	    for (var i = 0; i < paths.getLength(); i++) {
 	        path = paths.getAt(i);
@@ -1447,6 +1544,8 @@ BB.gmap.object = function( data, controller )
 
 	this.init();
 
+	this.controller().loading_place( this.ident() );
+
 	return this;
 }
 BB.gmap.object.prototype = new BB.base();
@@ -1807,6 +1906,8 @@ BB.gmap.marker.prototype.display = function()
 		if (typeof _data.loaded_callback === 'function') {
 			_data.loaded_callback( this );
 		}
+
+		this.controller().place_loaded( this );
 	}
 
 	// From BB.gmap.line
@@ -2002,6 +2103,11 @@ BB.gmap.marker.prototype.get_position = function()
 {
 	var position = new google.maps.MVCArray();
 	var array = new google.maps.MVCArray();
+
+	if (!this.object()) {
+		return false;
+	}
+
 	position.push( this.object().getPosition() );
 	array.push( position );
 	return array;
@@ -2101,6 +2207,7 @@ BB.gmap.line.prototype.init = function()
 	}
 
 	this.listeners();
+	this.controller().place_loaded( this );
 	return this;
 };
 
@@ -2130,6 +2237,7 @@ BB.gmap.line.prototype.redraw = function()
 	}
 
 	this.set_data({ paths : new_paths });
+
 	// this.init();
 };
 
