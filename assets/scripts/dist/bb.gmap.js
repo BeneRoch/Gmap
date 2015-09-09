@@ -471,6 +471,10 @@ BB.gmap.controller.prototype.place_loaded = function( obj )
 		return this;
 	}
 
+	if (obj.data('loaded')) {
+		return false;
+	}
+
 	// Keep that in mind
 	obj.set_data({ loaded : true });
 
