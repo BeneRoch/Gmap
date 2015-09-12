@@ -75,6 +75,16 @@ BB.gmap.object.prototype.set_map = function( map )
 
 
 /**
+* Adds point on map click
+*/
+BB.gmap.object.prototype.map_click = function(event)
+{
+	return this;
+};
+
+
+
+/**
 * show the marker
 * @return this (chainable)
 */

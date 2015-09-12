@@ -422,4 +422,3 @@ BB.gmap.marker.prototype.get_position = function()
 	array.push( position );
 	return array;
 };
-

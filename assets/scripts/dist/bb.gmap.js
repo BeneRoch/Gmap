@@ -477,7 +477,6 @@ BB.gmap.controller.prototype.place_loaded = function( obj )
 
 	// Keep that in mind
 	obj.set_data({ loaded : true });
-
 	if (this.check_loaded_places()) {
 		this._ready();
 	}
@@ -536,6 +535,8 @@ BB.gmap.controller.prototype._ready = function()
 	if (typeof _data.map_ready == 'function') {
 		_data.map_ready( this );
 	}
+
+	this.set_data({ loaded : true });
 
 	// chainable
 	return this;
@@ -886,6 +887,7 @@ BB.gmap.controller.prototype.listeners = function()
 
 	google.maps.event.addListenerOnce(this.map(), "tilesloaded", function(e) {
 		that.set_data({ 'tiles_loaded' : true });
+		that._ready();
 	});
 
 	// Map keypress listeners
@@ -1607,6 +1609,16 @@ BB.gmap.object.prototype.set_map = function( map )
 
 
 /**
+* Adds point on map click
+*/
+BB.gmap.object.prototype.map_click = function(event)
+{
+	return this;
+};
+
+
+
+/**
 * show the marker
 * @return this (chainable)
 */
@@ -2117,7 +2129,6 @@ BB.gmap.marker.prototype.get_position = function()
 	array.push( position );
 	return array;
 };
-
 
 /**
  * @name BB Gmap Line
