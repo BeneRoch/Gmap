@@ -2109,6 +2109,8 @@ BB.gmap.marker.prototype.focus = function()
 	// Scope
 	var that = this;
 
+	that.controller().set_focus( that );
+
 	// Data
 	var _data = this.data();
 
@@ -2117,12 +2119,15 @@ BB.gmap.marker.prototype.focus = function()
 		this.set_image( _data.icon_selected );
 	}
 
-	that.controller().set_focus( that );
-
 };
 
 BB.gmap.marker.prototype.blur = function()
 {
+	// Mechanics calls this methods upon map reset
+	// We wanna check if the place still exists in the ma data entry
+	if (!this.controller().get_place( this.ident() )) {
+		return false;
+	}
 	// Scope
 	var that = this;
 
