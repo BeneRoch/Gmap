@@ -20,7 +20,9 @@ BB.gmap.object = function( data, controller )
 	this.controller().loading_place( this.ident() );
 
 	return this;
-}
+};
+
+
 BB.gmap.object.prototype = new BB.base();
 
 /**
@@ -128,6 +130,11 @@ BB.gmap.object.prototype.delete = function()
 		return this;
 	}
 	_object.setMap(null);
+
+	google.maps.event.clearListeners(_object, 'click');
+	google.maps.event.clearListeners(_object, 'dragend');
+	google.maps.event.clearListeners(_object, 'mouseover');
+	google.maps.event.clearListeners(_object, 'mouseout');
 
 	var _data = this.data();
 	if (typeof _data.ondelete === 'function') {

@@ -87,7 +87,7 @@ BB.gmap.controller.prototype.map = function()
 	if (!this._MAP) {
 		// No map yet
 		this.error('No map associated to the current controller at BB.gmap.controller.map()');
-		return;
+		return false;
 	}
 	return this._MAP;
 };
@@ -221,6 +221,11 @@ BB.gmap.controller.prototype.init = function()
 {
 	var _data = this.data();
 
+	// Already hhave a map!
+	if (this.map()) {
+		return this;
+	}
+
 	// Map options
 	var map_options = this.data('map');
 
@@ -231,7 +236,7 @@ BB.gmap.controller.prototype.init = function()
 	this._MAP = new google.maps.Map(this.container(), map_options);
 
 	// Any places yet?
-	if (typeof _data.places == 'undefined') {
+	if (typeof _data.places != 'object') {
 		// This might be an unnecessary error
 		this.error('You haven\'t set any places yet');
 	} else {
@@ -949,3 +954,25 @@ BB.gmap.controller.prototype.export = function()
 	return ret;
 
 };
+
+
+/**
+* This function removes all places and datas associated with the map
+* @return this chainable
+*/
+BB.gmap.controller.prototype.reset = function()
+{
+	//
+	this._loop_all(function(place) {
+		place.hide();
+		place.delete();
+	});
+
+	// Reset map, as in remove all places on it
+	this.set_data({ places : undefined });
+
+	// remove focus, prevent some strange behaviors
+	this.remove_focus();
+
+	return this;
+}
