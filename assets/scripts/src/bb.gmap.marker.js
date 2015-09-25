@@ -198,7 +198,7 @@ BB.gmap.marker.prototype.display = function()
 	for (var k in custom_options) {
 		options[ k ] = custom_options[ k ];
 	}
-// console.log(options, 1);
+
 	if (this.icon().src) {
 		var width = this.icon().width;
 		var height = this.icon().height;
@@ -215,8 +215,6 @@ BB.gmap.marker.prototype.display = function()
 	   	);
 
 	}
-
-// console.log(options, 2);
 
 	if (typeof this.object() != 'undefined') {
 		this.object().setOptions(options);

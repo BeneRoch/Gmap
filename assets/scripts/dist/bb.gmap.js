@@ -1849,6 +1849,10 @@ BB.gmap.marker.prototype.set_icon = function( icon )
 		this.error('Invalid icon at BB.gmap.marker.prototype.set_icon( ' + icon + ' )');
 		return this;
 	}
+
+	// If we have a path, continue
+	// If its not an image and no path defined, this means
+	// we have an object with SRC and width and height
 	if ( !(icon instanceof Image) && (typeof icon.path === 'undefined')) {
 		this.set_image( icon.src, { width : icon.width, height : icon.height });
 		return this;
@@ -1935,7 +1939,7 @@ BB.gmap.marker.prototype.display = function()
 	for (var k in custom_options) {
 		options[ k ] = custom_options[ k ];
 	}
-// console.log(options, 1);
+
 	if (this.icon().src) {
 		var width = this.icon().width;
 		var height = this.icon().height;
@@ -1952,8 +1956,6 @@ BB.gmap.marker.prototype.display = function()
 	   	);
 
 	}
-
-// console.log(options, 2);
 
 	if (typeof this.object() != 'undefined') {
 		this.object().setOptions(options);
