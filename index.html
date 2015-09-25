@@ -46,7 +46,11 @@
 				test22 : {
 					categories: 'test,test1,test2',
 					type : 'marker',
-		            icon : 'http://labloco.com/infoalertes3/modules/infoalertes3/assets/images/public/marquee.svg',
+		            icon : {
+		            	src : 'http://labloco.com/infoalertes3/modules/infoalertes3/assets/images/public/marquee.svg',
+		            	height : 60,
+		            	width: 60
+		            },
 					coords : [ 45.577997,-73.76850009999998 ],
 					draggable: true,
 					editable: true
@@ -100,6 +104,7 @@
 					}
 				},
 				polygon : {
+					editable: true,
 					categories: 'test',
 					type : 'polygon',
 					paths: [

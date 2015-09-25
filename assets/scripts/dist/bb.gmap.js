@@ -1819,7 +1819,6 @@ BB.gmap.marker.prototype.init = function()
 	else if (typeof _data.icon == 'object') {
 		// We might have a path object (SVG)
 		 this.set_icon( _data.icon );
-		 this.display();
 	} else {
 		// No image load, no need to wait.
 		this.display();
@@ -1850,7 +1849,13 @@ BB.gmap.marker.prototype.set_icon = function( icon )
 		this.error('Invalid icon at BB.gmap.marker.prototype.set_icon( ' + icon + ' )');
 		return this;
 	}
+	if ( !(icon instanceof Image) && (typeof icon.path === 'undefined')) {
+		this.set_image( icon.src, { width : icon.width, height : icon.height });
+		return this;
+	}
+
 	this.__ICON = icon;
+	this.display();
 	return this;
 };
 
@@ -1859,7 +1864,7 @@ BB.gmap.marker.prototype.set_icon = function( icon )
 * Calls the this.set_icon() function after loading
 * @return this (chainable)
 */
-BB.gmap.marker.prototype.set_image = function( src )
+BB.gmap.marker.prototype.set_image = function( src, dimensions )
 {
 	var img = new Image();
 
@@ -1878,6 +1883,11 @@ BB.gmap.marker.prototype.set_image = function( src )
 		this.data.display();
 	};
 	img.src = src;
+
+	if (dimensions) {
+		img.height = dimensions.height;
+		img.width = dimensions.width;
+	}
 
 	return this;
 };
@@ -1920,7 +1930,12 @@ BB.gmap.marker.prototype.display = function()
 		}
 	}
 
-
+	// Mini extend
+	var custom_options = ( typeof _data.options == 'object' ) ? _data.options : {};
+	for (var k in custom_options) {
+		options[ k ] = custom_options[ k ];
+	}
+// console.log(options, 1);
 	if (this.icon().src) {
 		var width = this.icon().width;
 		var height = this.icon().height;
@@ -1935,13 +1950,10 @@ BB.gmap.marker.prototype.display = function()
 			new google.maps.Point((width/2), height),
 			new google.maps.Size(width, height)
 	   	);
+
 	}
 
-	// Mini extend
-	var custom_options = ( typeof _data.options == 'object' ) ? _data.options : {};
-	for (var k in custom_options) {
-		options[ k ] = custom_options[ k ];
-	}
+// console.log(options, 2);
 
 	if (typeof this.object() != 'undefined') {
 		this.object().setOptions(options);
