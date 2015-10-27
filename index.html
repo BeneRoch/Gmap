@@ -140,8 +140,16 @@
 		map.add_place_by_address('test_un_autre', '1859 iberville, montréal, qc, h2k3c4', {
 			type : 'marker',
 			editable: true,
-			icon : 'assets/images/marker.png',
-			icon_selected : 'assets/images/marker-selected.png',
+			icon : {
+				src : 'assets/images/marker.png',
+				width: 50,
+				height: 50
+			},
+			icon_selected : {
+				src : 'assets/images/marker-selected.png',
+				height: 50,
+				width: 50
+			},
 		    loaded_callback : function( obj ) {
 		    	// obj.controller().map().setCenter( obj.object().getPosition() );
 		    }

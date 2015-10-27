@@ -2130,7 +2130,11 @@ BB.gmap.marker.prototype.focus = function()
 
 	// Selected icon
 	if (_data.icon_selected) {
-		this.set_image( _data.icon_selected );
+		if (typeof _data.icon_selected == 'object') {
+			this.set_icon( _data.icon_selected );
+		} else {
+			this.set_image( _data.icon_selected );
+		}
 	}
 
 };
@@ -2151,7 +2155,11 @@ BB.gmap.marker.prototype.blur = function()
 	// Selected icon
 	if (_data.icon_selected) {
 		// No need to put back the icon if there's not selected icon specified.
-		this.set_image( _data.icon );
+		if (typeof _data.icon == 'object') {
+			this.set_icon( _data.icon );
+		} else {
+			this.set_image( _data.icon );
+		}
 	}
 };
 
