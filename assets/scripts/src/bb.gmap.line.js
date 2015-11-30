@@ -63,9 +63,10 @@ BB.gmap.line.prototype.init = function()
 	var _data = this.data();
 
 	// Set styles
-	if (typeof _data.styles == 'object') {
-		this.add_styles( _data.styles );
+	if (typeof _data.styles != 'object') {
+		this.set_data({ 'styles' : this.controller().data('default_styles')});
 	}
+	this.add_styles( _data.styles );
 
 	// Default = Empty array
 	// Makes it possible to DRAW a new line or polygon
@@ -513,6 +514,8 @@ BB.gmap.line.prototype.mouse_out = function( event )
 		return false;
 	}
 	// Go back to original state
+	var styles = that.get_data('styles');
+
 	that.set_styles( that.get_data('styles') );
 };
 
@@ -555,6 +558,8 @@ BB.gmap.line.prototype.click = function( event )
 
 	if (typeof _data.onclick == 'function') {
 		_data.onclick( that, event );
+	} else if (typeof _data.onclick == 'string' && typeof window[ _data.onclick ] == 'function') {
+		window[ _data.onclick ]( that, event  );
 	}
 
 	that.focus();
