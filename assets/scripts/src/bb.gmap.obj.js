@@ -12,6 +12,12 @@ BB.gmap.object = function( data, controller )
 	// Set controller right now
 	this.__CONTROLLER = controller;
 
+	this.__DELETED = false;
+
+	// Make sure no ASYNC action
+	// happen after suppression.
+	// this.__DELETED = false;
+
 	// Set data
 	this.set_data( data );
 
@@ -124,17 +130,14 @@ BB.gmap.object.prototype.hide = function()
 */
 BB.gmap.object.prototype.delete = function()
 {
+	this.__DELETED = true;
 	var _object = this.object();
 	if (typeof _object == 'undefined') {
 		this.error('No object defined at BB.gmap.object.delete()');
 		return this;
 	}
+	this.clear_listeners();
 	_object.setMap(null);
-
-	google.maps.event.clearListeners(_object, 'click');
-	google.maps.event.clearListeners(_object, 'dragend');
-	google.maps.event.clearListeners(_object, 'mouseover');
-	google.maps.event.clearListeners(_object, 'mouseout');
 
 	var _data = this.data();
 	if (typeof _data.ondelete === 'function') {
@@ -168,6 +171,7 @@ BB.gmap.object.prototype.focus 			= function() { return this; };
 BB.gmap.object.prototype.blur 			= function() { return this; };
 BB.gmap.object.prototype.get_bounds 	= function() { return this; };
 BB.gmap.object.prototype.get_position 	= function() { return this; };
+BB.gmap.object.prototype.clear_listeners= function() { return this; };
 
 
 /**

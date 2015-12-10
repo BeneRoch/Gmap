@@ -591,26 +591,26 @@ BB.gmap.controller.prototype.create_new = function( type, ident )
 	// 	return false;
 	// }
 
-	// var styles = this.data('default_styles');
-	// if (!styles) {
-	// 	styles = {
-	// 	    strokeColor: '#000000',
-	// 	    strokeOpacity: 0.8,
-	// 	    strokeWeight: 2,
-	// 	    fillColor: '#FFFFFF',
-	// 	    fillOpacity: 0.35,
-	// 		hover : {
-	// 		    strokeColor: '#000000',
-	// 		    strokeOpacity: 0.8,
-	// 		    strokeWeight: 2,
-	// 		    fillColor: '#FFFFFF',
-	// 		    fillOpacity: 1
-	// 		},
-	// 		focused : {
-	// 		    fillOpacity: 1
-	// 		}
-	// 	};
-	// }
+	var styles = this.data('default_styles');
+	if (!styles) {
+		styles = {
+		    strokeColor: '#000000',
+		    strokeOpacity: 0.8,
+		    strokeWeight: 2,
+		    fillColor: '#FFFFFF',
+		    fillOpacity: 0.35,
+			hover : {
+			    strokeColor: '#000000',
+			    strokeOpacity: 0.8,
+			    strokeWeight: 2,
+			    fillColor: '#FFFFFF',
+			    fillOpacity: 1
+			},
+			focused : {
+			    fillOpacity: 1
+			}
+		};
+	}
 
 	switch (type) {
 		case 'polygon':

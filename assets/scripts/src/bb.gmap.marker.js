@@ -287,6 +287,16 @@ BB.gmap.marker.prototype.listeners = function()
 
 };
 
+BB.gmap.marker.prototype.clear_listeners = function()
+{
+	var marker = this.object();
+
+	google.maps.event.clearListeners(marker, 'dragend');
+	google.maps.event.clearListeners(marker, 'click');
+
+	return this;
+};
+
 /**
 * Event handler
 * Dragend event handler. Calls the callback if it exists

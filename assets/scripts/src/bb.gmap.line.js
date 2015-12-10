@@ -461,17 +461,31 @@ BB.gmap.line.prototype.listeners = function()
 	var that = this;
 	that.object().bbobject = that;
 
-	google.maps.event.clearListeners( that.object(), 'mouseover' );
-	google.maps.event.clearListeners( that.object(), 'mouseout' );
-	google.maps.event.clearListeners( that.object(), 'click' );
-
+	this.clear_listeners();
 	google.maps.event.addListener( that.object(), 'mouseover', that.mouse_over );
 	google.maps.event.addListener( that.object(), 'mouseout', that.mouse_out );
 	google.maps.event.addListener( that.object(), 'click', that.click );
 
-
-
 };
+
+
+/**
+ * Remove all listeners associated with the current object
+ * @return {thisArg} [Chainable]
+ */
+BB.gmap.line.prototype.clear_listeners = function()
+{
+	// Scope
+	var that = this;
+
+	// Listener removal
+	google.maps.event.clearListeners( that.object(), 'mouseover' );
+	google.maps.event.clearListeners( that.object(), 'mouseout' );
+	google.maps.event.clearListeners( that.object(), 'click' );
+
+	// Chainable
+	return this;
+}
 
 /**
 * `this` is NOT a BB.gmap.line object
@@ -573,6 +587,10 @@ BB.gmap.line.prototype.click = function( event )
 */
 BB.gmap.line.prototype.focus = function()
 {
+	// Counter of ASYNC moves such as delete, into lost focus
+	if (this.__DELETED) {
+		return false;
+	}
 	var styles = this.get_data('styles');
 
 	if (typeof styles.focused == 'object') {
@@ -594,6 +612,10 @@ BB.gmap.line.prototype.focus = function()
 */
 BB.gmap.line.prototype.blur = function()
 {
+	// Counter of ASYNC moves such as delete, into lost focus
+	if (this.__DELETED) {
+		return false;
+	}
 	this.set_styles( this.get_data('styles') );
 
 	// No markers when not selected
