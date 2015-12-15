@@ -810,6 +810,7 @@ BB.gmap.controller.prototype.fit_bounds = function()
 
     var bounds = new google.maps.LatLngBounds();
 
+    var k = 0;
 	this._loop_all( function( obj )
 	{
 		var paths = obj.get_position();
@@ -823,10 +824,13 @@ BB.gmap.controller.prototype.fit_bounds = function()
 	            bounds.extend(path.getAt(ii));
 	        }
 	    }
+	    k++;
 
 	});
 
-	this.map().fitBounds( bounds );
+	if (k>0) {
+		this.map().fitBounds( bounds );
+	}
 
 	return this;
 };
