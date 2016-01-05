@@ -1182,7 +1182,6 @@ BB.gmap.controller.prototype.fit_bounds = function()
 
 	});
 
-	console.log(bounds);
 	if (k>0) {
 		this.map().fitBounds( bounds );
 	}
@@ -2063,8 +2062,8 @@ BB.gmap.marker.prototype.dragend = function(event)
 
 	if (typeof _data.ondragend == 'function') {
 		_data.ondragend( that, event );
-		that.set_data({ coords : [ event.latLng.lat, event.latLng.lng ]});
 	}
+	that.set_data({ coords : [ event.latLng.lat(), event.latLng.lng() ]});
 
 	that.focus();
 };

@@ -313,8 +313,8 @@ BB.gmap.marker.prototype.dragend = function(event)
 
 	if (typeof _data.ondragend == 'function') {
 		_data.ondragend( that, event );
-		that.set_data({ coords : [ event.latLng.lat, event.latLng.lng ]});
 	}
+	that.set_data({ coords : [ event.latLng.lat(), event.latLng.lng() ]});
 
 	that.focus();
 };
