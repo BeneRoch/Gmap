@@ -1184,6 +1184,13 @@ BB.gmap.controller.prototype.fit_bounds = function()
 
 	if (k>0) {
 		this.map().fitBounds( bounds );
+		if (this.data('max_fitbounds_zoom')) {
+			var max = this.data('max_fitbounds_zoom');
+			var current_zoom = this.map().getZoom();
+			if (current_zoom > max) {
+				this.map().setZoom(max);
+			}
+		}
 	}
 
 	return this;
@@ -1299,6 +1306,10 @@ BB.gmap.controller.prototype.export = function()
 	}
 
 	var center = this.map().getCenter();
+
+	// Hard translation of map values
+	// Map options should be fixed to
+	// fit the API description
 	ret.map.center.x = center.lat();
 	ret.map.center.y = center.lng();
 	ret.map.zoom = this.map().getZoom();
@@ -1310,6 +1321,80 @@ BB.gmap.controller.prototype.export = function()
 	});
 
 	return ret;
+
+};
+
+/**
+ * Get the map STATIC image
+ * @see https://developers.google.com/maps/documentation/static-maps
+ * @return {[type]} [description]
+ */
+BB.gmap.controller.prototype.get_map_image = function()
+{
+	var ret = this.data();
+
+	if (typeof ret.places != 'undefined') {
+		delete ret.places;
+	}
+
+	if (typeof ret.center != 'undefined') {
+		delete ret.center;
+	}
+
+	var center = this.map().getCenter();
+
+	var url = "https://maps.googleapis.com/maps/api/staticmap?";
+
+	var aURL = [];
+
+	// Center of the map
+	aURL.push('center='+center.lat()+','+center.lng())
+	aURL.push('zoom='+this.map().getZoom());
+	aURL.push('size=640x400');
+
+	this._loop_all( function( place ) {
+
+		// if (place.data('type') == 'marker') {
+		// 	if (!place.data('icon').src) {
+		// 		return false;
+		// 	}
+		// 	var img = new Image();
+		// 	img.src = place.data('icon').src;
+		// 	var sizes = place.data('icon').width + 'x'+place.data('icon').height;
+		// 	var coords = place.data('coords');
+		// 	var str = 'markers=size:'+sizes+'|icon:'+img.src+'|'+coords[0]+','+coords[1];
+		// 	aURL.push(str);
+		// }
+
+		if (place.data('type') == 'polygon') {
+			var paths = place.data('paths');
+			if (!paths) {
+				return false;
+			}
+
+			var aPath = [];
+			var styles = place.data('styles');
+			var color = styles.strokeColor;
+			var weight = styles.strokeWeight;
+			var fill = styles.fillColor;
+			aPath.push('color:'+color);
+			aPath.push('weight:'+weight);
+			aPath.push('fill:'+fill);
+
+			var i = 0;
+			var length = paths.length;
+			for (; i<length; i++) {
+				aPath.push( paths[i].join(',') );
+			}
+			aPath.push(paths[0].join(','));
+
+			aURL.push('path='+aPath.join('|'));
+
+		}
+	});
+
+	url = url + aURL.join('&');
+	return url;
 
 };
 
