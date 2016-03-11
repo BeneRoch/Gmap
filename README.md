@@ -96,14 +96,26 @@ set_zoom        |   {int} zoom          | Sets the zoom of the map. Same as call
 
 
 #### Other methods
-Method          |   Param               |   Description
-----------------|-----------------------|-----------------------------------
-add_place       		| {String} ident, {Object} data 			| Adds a place on the map, as long as the data are filled up. You need the exact coordinates to use this method
-add_place_by_address    | {String} ident, {String} address, {Object} data | Adds a place by geolocating the specified address. If the address is invalid, chances are that the marker is gonna be added in the Indian Ocean (0, 0). This method is asynchronus, it looks for the geocode with the google api geocoder before adding the marker to the map.
-geocode_address 		|   {String} address, {Function} callback 	| Geocodes an address and then uses the callback function to do what you wanted with the address
-translate_coords   		| {Array} coords [lat, lon] 				| Returns a google.maps.LatLng() object with the specified coords
-create_new  			| {String} ident    						| Sets the listeners to add points on the map byclicking. The type has to be defined
-_loop_all 				| {Function} callback     					| Loops through all objects instanciated in that controller. Calls the callback function on each of them with the `place` as argument
+Method                  |   Param                                           |   Description
+------------------------|---------------------------------------------------|-----------------------------------
+add_place       		| {String} ident, {Object} data 			        | Adds a place on the map, as long as the data are filled up. You need the exact coordinates to use this method
+add_place_by_address    | {String} ident, {String} address, {Object} data   | Adds a place by geolocating the specified address. If the address is invalid, chances are that the marker is gonna be added in the Indian Ocean (0, 0). This method is asynchronus, it looks for the geocode with the google api geocoder before adding the marker to the map.
+geocode_address 		|   {String} address, {Function} callback 	        | Geocodes an address and then uses the callback function to do what you wanted with the address
+translate_coords   		| {Array} coords [lat, lon] 				        | Returns a google.maps.LatLng() object with the specified coords
+create_new  			| {String} ident    						        | Sets the listeners to add points on the map byclicking. The type has to be defined
+_loop_all 				| {Function} callback     					        | Loops through all objects instanciated in that controller. Calls the callback function on each of them with the `place` as argument
+fit_bounds              | null                                              | Fit bounds to all objects on the map. Call after "Ready"
+ready                   | {Function}                                        | Callback function called after everything is loaded on the map
+
+#### Options
+
+Name                |   Type                |   Description
+--------------------|-----------------------|-----------------------------------
+map                 |   {Array}             |   Map options passed to the map instance. @see https://developers.google.com/maps/documentation/javascript/tutorial#MapOptions
+places              |   {Array}             |   Places to be found on the map. 3 types availables: Marker, Line, Polygon. @see options for all BB.gmap.object, BB.gmap.marker, BB.gmap.line, BB.gmap.polygon
+use_clusterer       |   {Boolean}           |   Map uses or not the clusterer (unfinished)
+max_fitbounds_zoom  |   {Boolean}           |   Max zoom value when asking a "fit_bounds", not to be confused with map.maxZoom
+default_styles      |   {Array}             |   Default polygon and line styles. @see BB.gmap.line styles
 
 ### BB.gmap.object
 
