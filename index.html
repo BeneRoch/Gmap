@@ -1,36 +1,77 @@
-<html>
-<body>
+<!DOCTYPE html>
+<html style="height:100%;">
+<head>
+	<meta charset="utf-8">
+    <link href="assets/styles/dist/screen.css" rel="stylesheet" type="text/css">
 
-<div id="test" class="test" style="border: 1px solid blue; width: 100%; height: 100%; background: red;"></div>
+
+</head>
+<body style="height:100%;">
+<div class="grid">
+	<div class="row">
+		<div id="map1" class="quarter"></div>
+
+		<div class="description quarter">
+			<h2>Markers</h2>
+			<p>
+				Map avec les différents types de markers possibles, à savoir <b>icon</b> et <b>symbole / path</b>
+			</p>
+		</div>
+
+		<div id="map2" class="quarter"></div>
+		<div class="description quarter">
+			<h2>Lines / Polygons</h2>
+			<p>
+				Map avec exemple de polygon et line.
+			</p>
+		</div>
+	</div>
+
+	<div class="row">
+
+		<div id="map3" class="quarter"></div>
+		<div class="description quarter">
+			<h2>Styles</h2>
+			<p>
+				Modification des styles d'une map. Plusieurs outils existent pour aider la création de
+				styles pour une google maps. <a href="https://snazzymaps.com/">Snazzy Maps</a> en est un
+				excellent exemple. Choisissez un style et appliquez le à votre controller comme suit:
+			</p>
+
+<pre class="code">
+map.set_styles( <b>[INSERT JSON HERE]</b> );
+</pre>
+		</div>
+
+		<div id="map4" class="quarter"></div>
+		<div class="description quarter">
+			<h2>Clusterer</h2>
+			<p>
+				Le plugin markerClusterer est inclus avec la librairie. Vous pouvez donc en consulter
+				la <a href="http://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclustererplus/docs/reference.html" target="_blank">doc</a>.
+			</p>
+
+<pre class="code">
+{
+	use_clusterer: true
+}
+</pre>
+		</div>
+
+	</div>
+</div>
 
 </body>
 
 
 <script>
 	var map;
+	var map2;
+	var map3;
+	var map4;
 	function initialize()
 	{
-		map = new BB.gmap.controller(document.getElementById('test'), {
-			marker_creation_callback : function( marker ) {
-				console.log(marker, 'marker');
-			},
-			default_styles: {
-			    strokeColor: '#000000',
-			    strokeOpacity: 0.8,
-			    strokeWeight: 3,
-			    fillColor: '#ffffff',
-			    fillOpacity: 0.35,
-				hover : {
-				    strokeColor: '#000000',
-				    strokeOpacity: 1,
-				    strokeWeight: 2,
-				    fillColor: '#ffffff',
-				    fillOpacity: 0.5
-				},
-				focused : {
-				    fillOpacity: 0.8
-				}
-			},
+		map = new BB.gmap.controller(document.getElementById('map1'), {
 			use_clusterer: false,
 		   	map: {
 	  			center: {
@@ -44,27 +85,19 @@
 			},
 			places :{
 				test22 : {
-					categories: 'test,test1,test2',
 					type : 'marker',
 		            icon : {
 		            	src : 'http://labloco.com/infoalertes3/modules/infoalertes3/assets/images/public/marquee.svg',
 		            	height : 60,
 		            	width: 60
 		            },
-					coords : [ 45.577997,-73.76850009999998 ],
-					draggable: true,
-					editable: true
+					coords : [ 45.577997,-73.76850009999998 ]
 				},
 				test : {
-					categories: 'test,test1,test2',
 					type : 'marker',
 		            icon : {
 						path: 'M 125,5 155,90 245,90 175,145 200,230 125,180 50,230 75,145 5,90 95,90 z',
 						fillColor: 'yellow',
-						icons : [{
-							icon: "http://localhost/pincourt/www/modules/pincourt/assets/images/svgs/map-marker.svg",
-							offset: '50%'
-						}],
 						fillOpacity: 0.8,
 						scale: 1,
 						strokeColor: 'gold',
@@ -72,15 +105,59 @@
 						height: '20px',
 						width: '20px'
 					},
-					coords : [ 45.577997,-73.76850009999998 ],
-					draggable: true
+					coords : [ 45.577997,-73.76850009999998 ]
+				}
+			}
+		})
+		map.add_place_by_address('test3', '1870 iberville, montréal, qc', {
+			type : 'marker',
+			icon : {
+				src : 'assets/images/marker.png'
+			}
+		});
+		map.add_place_by_address('test5', '1749 iberville, montréal, qc', {
+			type : 'marker',
+			icon : {
+				src : 'assets/images/marker.png'
+			}
+		});
+		map.add_place_by_address('test91', '2055 parthenais, montréal, qc', {
+			type : 'marker',
+			icon : {
+				src : 'assets/images/marker.png'
+			}
+		});
+
+		// Fit bounds.
+		map.init().ready( function() { map.fit_bounds(); });
+
+		// Focus.
+		map.on('focus', function(item) {
+			console.log(item.data('coords'));
+		});
+
+
+
+
+		map2 = new BB.gmap.controller(document.getElementById('map2'), {
+			use_clusterer: false,
+		   	map: {
+	  			center: {
+					x 	: 45.3712923,
+					y 	: -73.9820994
 				},
+				zoom: 12,
+				mapType 	: 'roadmap',
+				coordsType	: 'inpage', // array, json? (vs ul li)
+				map_mode	: 'default'
+			},
+			places: {
 				line : {
 					type : 'line',
 					paths: [
-						[37.772323, -122.214897],
-						[21.291982, -157.821856],
-						[-18.142599, 178.431]
+						[45.3712923, -73.9820994],
+						[41.291982, -67.821856],
+						[48.142599, -58.431]
 					],
 					onmouseover: function(object, event) {
 
@@ -104,17 +181,13 @@
 					}
 				},
 				polygon : {
-					editable: true,
 					categories: 'test',
 					type : 'polygon',
 					paths: [
-						[37.272323, -122.214897],
-						[21.191982, -197.821856],
-						[-18.142599, 138.431]
+						[45.577997,-73.76850009999998],
+						[42.577997,-73.76850009999998],
+						[45.577997,-75.76850009999998]
 					],
-					onmouseover: function(object, event) {
-
-					},
 					styles : {
 					    strokeColor: '#000000',
 					    strokeOpacity: 0.8,
@@ -134,38 +207,67 @@
 					}
 				}
 			}
-		})
+		});
+		map2.init().ready(function() { map2.fit_bounds() });
+
+		map3 = new BB.gmap.controller(document.getElementById('map3'), {
+			use_clusterer: false,
+		   	map: {
+	  			center: {
+					x 	: 45.3712923,
+					y 	: -73.9820994
+				},
+				zoom: 12,
+				mapType 	: 'roadmap',
+				coordsType	: 'inpage', // array, json? (vs ul li)
+				map_mode	: 'default'
+			}
+		});
+		map3.init();
+		map3.set_styles([{"featureType":"all","elementType":"all","stylers":[{"saturation":-100},{"gamma":1.15}]},{"featureType":"administrative","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1},{"hue":"#00447b"}]},{"featureType":"administrative","elementType":"labels.icon","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.icon","stylers":[{"weight":0.1}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1}]},{"featureType":"all","elementType":"all","stylers":[{"lightness":-12}]}]);
 
 
-		map.add_place_by_address('test_un_autre', '1859 iberville, montréal, qc, h2k3c4', {
+		map4 = new BB.gmap.controller(document.getElementById('map4'), {
+			use_clusterer: true,
+		   	map: {
+	  			center: {
+					x 	: 45.3712923,
+					y 	: -73.9820994
+				},
+				zoom: 12,
+				mapType 	: 'roadmap',
+				coordsType	: 'inpage', // array, json? (vs ul li)
+				map_mode	: 'default'
+			}
+		});
+		map4.init().ready(function() {
+			map4.fit_bounds();
+		});
+		map4.add_place_by_address('test3', '1870 iberville, montréal, qc', {
 			type : 'marker',
-			editable: true,
 			icon : {
-				src : 'assets/images/marker.png',
-				width: 50,
-				height: 50
-			},
-			icon_selected : {
-				src : 'assets/images/marker-selected.png',
-				height: 50,
-				width: 50
-			},
-		    loaded_callback : function( obj ) {
-		    	// obj.controller().map().setCenter( obj.object().getPosition() );
-		    }
-		})
-		map.init().ready( function() { alert('READY!') });
-		map.fit_bounds();
-		map.set_styles([{"featureType":"all","elementType":"all","stylers":[{"saturation":-100},{"gamma":1.15}]},{"featureType":"administrative","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1},{"hue":"#00447b"}]},{"featureType":"administrative","elementType":"labels.icon","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.icon","stylers":[{"weight":0.1}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#00447b"}]},{"featureType":"road.highway","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"color":"#00447b"},{"weight":0.1}]},{"featureType":"all","elementType":"all","stylers":[{"lightness":-12}]}]);
-		map.on('focus', function(item) {
+				src : 'assets/images/marker.png'
+			}
+		});
+		map4.add_place_by_address('test5', '1749 iberville, montréal, qc', {
+			type : 'marker',
+			icon : {
+				src : 'assets/images/marker.png'
+			}
+		});
+		map4.add_place_by_address('test91', '2055 parthenais, montréal, qc', {
+			type : 'marker',
+			icon : {
+				src : 'assets/images/marker.png'
+			}
 		});
 
 	}
 </script>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
-<script src="http://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=fr&callback=initialize"></script>
 
 <!-- <script src="assets/scripts/dist/gmap.min.js"></script> -->
 <script src="assets/scripts/dist/bb.gmap.js"></script>
+<script src="http://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=fr&callback=initialize"></script>
 </html>

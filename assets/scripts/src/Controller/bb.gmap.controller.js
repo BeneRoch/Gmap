@@ -375,11 +375,6 @@ BB.gmap.controller.prototype.add_place = function( ident, data )
 		break;
 	}
 
-	if (this.data('use_clusterer')) {
-		var clusterer_options = this.data('clusterer_options');
-		this.activate_clusterer( clusterer_options );
-	}
-
 	return this;
 };
 
@@ -414,7 +409,6 @@ BB.gmap.controller.prototype.geocode_address = function( address, callback )
 			'address': address
 		},
 		function(results, status) {
-
 		  if (status == google.maps.GeocoderStatus.OK) {
 			var lat = results[0].geometry.location.lat();
 			var lon = results[0].geometry.location.lng();
@@ -669,6 +663,7 @@ BB.gmap.controller.prototype.on = function( ev, func )
 *
 * Callbacks:
 * marker_creation_callback
+* Important if you are actually creating something on the map.
 *
 * @param event google map event
 * @return this (chainable)
@@ -885,7 +880,11 @@ BB.gmap.controller.prototype.get_all_markers = function()
 */
 BB.gmap.controller.prototype.activate_clusterer = function( options )
 {
-	this.set_clusterer( new MarkerClusterer(this.map(), this.get_all_markers(), {}) );
+	if (this.clusterer()) {
+		this.clusterer().clearMarkers();
+	}
+	var markers = this.get_all_markers();
+	this.set_clusterer( new MarkerClusterer(this.map(), markers) );
 	return this;
 }
 
@@ -1000,17 +999,17 @@ BB.gmap.controller.prototype.get_map_image = function()
 
 	this._loop_all( function( place ) {
 
-		// if (place.data('type') == 'marker') {
-		// 	if (!place.data('icon').src) {
-		// 		return false;
-		// 	}
-		// 	var img = new Image();
-		// 	img.src = place.data('icon').src;
-		// 	var sizes = place.data('icon').width + 'x'+place.data('icon').height;
-		// 	var coords = place.data('coords');
-		// 	var str = 'markers=size:'+sizes+'|icon:'+img.src+'|'+coords[0]+','+coords[1];
-		// 	aURL.push(str);
-		// }
+		if (place.data('type') == 'marker') {
+			if (!place.data('icon').src) {
+				return false;
+			}
+			var img = new Image();
+			img.src = place.data('icon').src;
+			var sizes = place.data('icon').width + 'x'+place.data('icon').height;
+			var coords = place.data('coords');
+			var str = 'markers=size:'+sizes+'|icon:'+img.src+'|'+coords[0]+','+coords[1];
+			aURL.push(str);
+		}
 
 		if (place.data('type') == 'polygon') {
 			var paths = place.data('paths');
@@ -1023,9 +1022,11 @@ BB.gmap.controller.prototype.get_map_image = function()
 			var color = styles.strokeColor;
 			var weight = styles.strokeWeight;
 			var fill = styles.fillColor;
-			aPath.push('color:'+color);
+			// aPath.push('color:'+color);
+			aPath.push('color:black');
 			aPath.push('weight:'+weight);
-			aPath.push('fill:'+fill);
+			aPath.push('fillcolor:white');
+			// aPath.push('fill:'+fill);
 
 			var i = 0;
 			var length = paths.length;

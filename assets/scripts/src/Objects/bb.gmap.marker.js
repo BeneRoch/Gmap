@@ -113,7 +113,11 @@ BB.gmap.marker.prototype.set_icon = function( icon )
 	// If its not an image and no path defined, this means
 	// we have an object with SRC and width and height
 	if ( !(icon instanceof Image) && (typeof icon.path === 'undefined')) {
-		this.set_image( icon.src, { width : icon.width, height : icon.height });
+		var dimensions;
+		if (icon.width && icon.height) {
+			dimensions = { width : icon.width, height: icon.height };
+		}
+		this.set_image( icon.src, dimensions);
 		return this;
 	}
 
@@ -226,12 +230,7 @@ BB.gmap.marker.prototype.display = function()
 	if (!this._listeners) {
 		this.listeners();
 		this._listeners = true;
-
-		if (typeof _data.loaded_callback === 'function') {
-			_data.loaded_callback( this );
-		}
-
-		this.controller().place_loaded( this );
+		this.marker_loaded();
 	}
 
 	// From BB.gmap.line
@@ -243,6 +242,27 @@ BB.gmap.marker.prototype.display = function()
 	return this;
 };
 
+
+/**
+ * Do whatever you want upon marker load
+ * @return {thisArg}
+ */
+BB.gmap.marker.prototype.marker_loaded = function()
+{
+	var _data = this.data();
+
+	if (typeof _data.loaded_callback === 'function') {
+		_data.loaded_callback( this );
+	}
+
+	if (this.controller().data('use_clusterer')) {
+		var clusterer_options = this.controller().data('clusterer_options');
+		this.controller().activate_clusterer( {gridSize: 10, maxZoom: 15} );
+	}
+
+	this.controller().place_loaded( this );
+	return this;
+}
 
 /**
 * Require google marker object

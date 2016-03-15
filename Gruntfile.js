@@ -8,14 +8,14 @@ module.exports = function(grunt) {
 		concat: {
 			global: {
 				src: [
-					'assets/scripts/src/bb.base.js',
-					'assets/scripts/src/bb.data.js',
-					'assets/scripts/src/bb.gmap.controller.js',
-					'assets/scripts/src/bb.gmap.infobox.js',
-					'assets/scripts/src/bb.gmap.obj.js',
-					'assets/scripts/src/bb.gmap.marker.js',
-					'assets/scripts/src/bb.gmap.line.js',
-					'assets/scripts/src/bb.gmap.polygon.js',
+					'assets/scripts/src/Base/bb.base.js',
+					'assets/scripts/src/Base/bb.data.js',
+					'assets/scripts/src/Controller/bb.gmap.controller.js',
+					'assets/scripts/src/Objects/bb.gmap.infobox.js',
+					'assets/scripts/src/Objects/bb.gmap.obj.js',
+					'assets/scripts/src/Objects/bb.gmap.marker.js',
+					'assets/scripts/src/Objects/bb.gmap.line.js',
+					'assets/scripts/src/Objects/bb.gmap.polygon.js',
 					'assets/scripts/src/markerclusterer.js'
 				],
       			dest: 'assets/scripts/dist/bb.gmap.js'
@@ -70,6 +70,16 @@ module.exports = function(grunt) {
 					'assets/scripts/dist/min/gmap.min.js': ['assets/scripts/dist/*.js']
 				}
 			}
+		},
+		sass:{
+		  	options: {
+		        sourceMap: false
+		    },
+			dist: {
+				files: {
+					'assets/styles/dist/screen.css': 'assets/styles/src/screen.scss'
+				}
+			}
 		}
 	});
 
@@ -77,6 +87,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
+	grunt.loadNpmTasks('grunt-sass');
 	grunt.loadNpmTasks('grunt-notify');
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');

@@ -1,0 +1,60 @@
+body, html {
+  margin: 0; }
+
+.grid {
+  height: 100%;
+  width: 100%; }
+
+.row {
+  width: 100%;
+  clear: both;
+  margin-bottom: 20px; }
+
+.half, .quarter, .whole, .three-fourth {
+  float: left;
+  padding-left: 10px;
+  padding-right: 10px; }
+  .half:first-child, .quarter:first-child, .whole:first-child, .three-fourth:first-child {
+    padding-left: 0; }
+  .half:last-child, .quarter:last-child, .whole:last-child, .three-fourth:last-child {
+    padding-right: 0; }
+
+.half {
+  width: 50%; }
+
+.quarter {
+  width: 25%; }
+
+.whole {
+  width: 100%; }
+
+.grid {
+  display: flex;
+  flex-direction: column; }
+
+.row {
+  display: flex;
+  flex: 1; }
+
+@media (max-width: 950px) {
+  .half, .quarter, .whole, .three-fourth {
+    height: 100%; }
+  .quarter {
+    width: 50%; }
+  .half {
+    width: 100%; } }
+
+@media (max-width: 600px) {
+  .quarter {
+    width: 100%; } }
+
+.right {
+  float: right; }
+
+.clear {
+  clear: both; }
+
+.code {
+  background: #ddd;
+  border-radius: 10px;
+  padding: 10px; }

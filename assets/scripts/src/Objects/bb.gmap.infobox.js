@@ -27,7 +27,7 @@ BB.gmap.statics = BB.gmap.statics || {};
 */
 BB.gmap.infobox = function( elem, opts )
 {
-	BB.gmap.statics
+	BB.gmap.statics;
 	this.__MAP = undefined;
 
 	// Let's get rid of jQuery for this one
