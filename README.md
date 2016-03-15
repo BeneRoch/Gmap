@@ -9,7 +9,7 @@
     - BB.gmap.line
     - BB.gmap.polygon
     - BB.gmap.marker
-- Examples
+- Examples [beneroch.com/gmap](http://beneroch.com/gmap "Bene gmap")
     - Map initialization
     - Add place
         - Marker
