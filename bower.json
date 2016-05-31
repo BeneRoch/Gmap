@@ -3,7 +3,7 @@
   "homepage": "https://github.com/beneroch/Gmap",
   "description": "Helper classes to deal with Google Map API, control elements on the map",
   "license": "MIT",
-  "main": "assets/scripts/dist/min/gmap.min.js",
+  "main": "assets/scripts/dist/bb.gmap.js",
   "keywords": [
     "bene",
     "bene-bundle",
