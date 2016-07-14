@@ -1,5 +1,5 @@
 {
-  "name": "Gmap",
+  "name": "beneroch-gmap",
   "version": "1.0.0",
   "author": "Bene <ben@locomotive.ca>",
   "contributors": [
@@ -14,5 +14,24 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-sass": "1.1.0",
     "grunt-notify": "^0.4.1"
-  }
+  },
+  "description": "- Description\r - Objects / Classes\r     - BB.base\r     - BB.data\r     - BB.gmap.controller\r     - BB.gmap.infobox\r     - BB.gmap.obj\r     - BB.gmap.line\r     - BB.gmap.polygon\r     - BB.gmap.marker\r - Examples [beneroch.com/gmap](http://beneroch.com/gmap \"Bene gmap\")\r     - Map initialization\r     - Add place\r         - Marker\r         - Line\r         - Polygon\r     - Add place by address\r     - Change styles\r     - Add callback functions for events\r         - click\r         - mouseover / mouseout",
+  "main": "Gruntfile.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BeneRoch/Gmap.git"
+  },
+  "keywords": [
+    "beneroch",
+    "gmap"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BeneRoch/Gmap/issues"
+  },
+  "homepage": "https://github.com/BeneRoch/Gmap#readme"
 }
