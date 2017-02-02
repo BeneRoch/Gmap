@@ -569,15 +569,13 @@ BB.gmap.line.prototype.click = function( event )
 	// Scope
 	var that = this.bbobject;
 	var _data = that.data();
+	that.focus();
 
 	if (typeof _data.onclick == 'function') {
 		_data.onclick( that, event );
 	} else if (typeof _data.onclick == 'string' && typeof window[ _data.onclick ] == 'function') {
 		window[ _data.onclick ]( that, event  );
 	}
-
-	that.focus();
-
 };
 
 
@@ -591,12 +589,13 @@ BB.gmap.line.prototype.focus = function()
 	if (this.__DELETED) {
 		return false;
 	}
+	this.controller().set_focus( this );
+
 	var styles = this.get_data('styles');
 
 	if (typeof styles.focused == 'object') {
 		this.set_styles( styles.focused );
 	}
-	this.controller().set_focus( this );
 
 	// Markers when selected AND editable
 	if (this.data('editable')) {
