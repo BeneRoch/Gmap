@@ -346,8 +346,6 @@ BB.gmap.marker.prototype.dragend = function(event) {
 BB.gmap.marker.prototype.onclick = function(event) {
     // Scope
     var that = this.bbmarker;
-    alert('on click..............');
-
 
     var _data = that.data();
 
