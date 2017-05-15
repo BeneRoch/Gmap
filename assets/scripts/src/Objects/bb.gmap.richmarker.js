@@ -153,43 +153,20 @@ BB.gmap.richmarker.prototype.clear_listeners = function() {
 };
 
 /**
- * Event handler
- * Dragend event handler. Calls the callback if it exists
- *
- * this = marker object
- * @param {Event} event
- */
-BB.gmap.richmarker.prototype.dragend = function(event) {
-    // Scope
-    var that = this.bbmarker;
-
-    var _data = that.data();
-
-    if (typeof _data.ondragend == 'function') {
-        _data.ondragend(that, event);
-    }
-    that.set_data({
-        coords: [event.latLng.lat(), event.latLng.lng()]
-    });
-
-    that.focus();
-};
-
-/**
  * marker-selected.png
  */
 BB.gmap.richmarker.prototype.focus = function() {
-    // Scope
-    var that = this;
 
-    that.controller().set_focus(that);
-
-    // Data
-    var _data = this.data();
+    if (this.controller().focused()) {
+        if (this.controller().focused().ident() == this.ident()) {
+            return this;
+        }
+    }
 
     // Selected icon
     // Set selected state
-
+    this.controller().set_focus(this);
+    this.object().setHtml(this.data('selected_html'));
 };
 
 BB.gmap.richmarker.prototype.blur = function() {
@@ -198,14 +175,10 @@ BB.gmap.richmarker.prototype.blur = function() {
     if (!this.controller().get_place(this.ident())) {
         return false;
     }
-    // Scope
-    var that = this;
-
-    // Data
-    var _data = this.data();
 
     // Selected icon
     // Unset selected state
+    this.object().setHtml(this.data('html'));
 };
 
 
@@ -222,8 +195,9 @@ customMarker = function(data) {
 
     if (!(typeof BB.gmap.customMarker == "function")) {
         BB.gmap.customMarker = function(data) {
+            this.MAP = data.map;
             if (typeof data.map !== 'undefined') {
-                this.setMap(data.map);
+                this.setMap(this.MAP);
             }
 
             if (typeof data.position !== 'undefined') {
@@ -248,6 +222,8 @@ customMarker = function(data) {
                 div.innerHTML = this.html;
 
                 google.maps.event.addDomListener(div, "click", function(event) {
+                    event.stopPropagation();
+                    event.preventDefault();
                     google.maps.event.trigger(self, "click");
                 });
                 var panes = this.getPanes();
@@ -265,6 +241,19 @@ customMarker = function(data) {
 
             this.div = div;
         };
+
+        BB.gmap.customMarker.prototype.setHtml = function(html) {
+            var div = this.div;
+            this.div.innerHTML = html;
+            var point = this.getProjection().fromLatLngToDivPixel(this.latlng);
+
+            if (point) {
+                var height = div.offsetHeight;
+                var width = div.offsetWidth;
+                div.style.left = point.x - (width / 2) + 'px';
+                div.style.top = point.y - (height) + 'px';
+            }
+        }
 
         BB.gmap.customMarker.prototype.remove = function() {
             if (this.div) {
