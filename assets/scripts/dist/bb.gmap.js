@@ -1376,6 +1376,11 @@ BB.gmap.controller.prototype.reset = function() {
         places: undefined
     });
 
+    this.__PLACES = {
+        markers: {},
+        polygons: {},
+        lines: {}
+    };
     // remove focus, prevent some strange behaviors
     this.remove_focus();
 
@@ -1737,7 +1742,6 @@ BB.gmap.object.prototype.delete = function() {
     this.controller()._delete(this.data('type'), this.ident());
 
     // Deletion, remove from memory
-    delete _object;
 
     return this;
 };
@@ -2787,36 +2791,38 @@ BB.gmap.line.prototype.add_point = function(path, index) {
     paths.insertAt(index, path);
 
     // Add marker on top of it
-    var marker = new BB.gmap.marker({
-        coords: [path.lat(), path.lng()],
-        draggable: true, // The whole point of these.
+    if (this.data('editable')) {
+        var marker = new BB.gmap.marker({
+            coords: [path.lat(), path.lng()],
+            draggable: true, // The whole point of these.
 
-        // icon: 'assets/images/marker-tri.png',
-        icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 4
-        },
+            // icon: 'assets/images/marker-tri.png',
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 4
+            },
 
-        hidden: !(this.data('editable')),
-        editable: true,
-        ondragend: function(marker, event) {
-            that.move_point(marker.object().index, [event.latLng.lat(), event.latLng.lng()]);
-        },
-        ondelete: function(marker) {
-            that.remove_point(marker.object().index);
-            that.focus();
+            hidden: !(this.data('editable')),
+            editable: true,
+            ondragend: function(marker, event) {
+                that.move_point(marker.object().index, [event.latLng.lat(), event.latLng.lng()]);
+            },
+            ondelete: function(marker) {
+                that.remove_point(marker.object().index);
+                that.focus();
 
-            if (!that.get_paths().length) {
-                that.delete();
-            }
-        },
-        index: index
-    }, that.controller());
+                if (!that.get_paths().length) {
+                    that.delete();
+                }
+            },
+            index: index
+        }, that.controller());
 
-    if (!this.__MARKERS) {
-        this.__MARKERS = [];
+        if (!this.__MARKERS) {
+            this.__MARKERS = [];
+        }
+        this.__MARKERS[index] = marker;
     }
-    this.__MARKERS[index] = marker;
 
     return this;
 };

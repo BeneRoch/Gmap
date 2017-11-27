@@ -1039,6 +1039,11 @@ BB.gmap.controller.prototype.reset = function() {
         places: undefined
     });
 
+    this.__PLACES = {
+        markers: {},
+        polygons: {},
+        lines: {}
+    };
     // remove focus, prevent some strange behaviors
     this.remove_focus();
 

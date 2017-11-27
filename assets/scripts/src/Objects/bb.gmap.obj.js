@@ -132,7 +132,6 @@ BB.gmap.object.prototype.delete = function() {
     this.controller()._delete(this.data('type'), this.ident());
 
     // Deletion, remove from memory
-    delete _object;
 
     return this;
 };

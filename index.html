@@ -244,7 +244,9 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 			map4.fit_bounds();
 		});
 		map4.add_place_by_address('test3', '1870 iberville, montréal, qc', {
-			type : 'marker',
+			type : 'richmarker',
+			html : '<div style="background: blue; width:20px; height: 20px;"></div>',
+			selected_html : '<div style="background: red; width:20px; height: 20px;"></div>',
 			icon : {
 				src : 'assets/images/marker.png'
 			}
