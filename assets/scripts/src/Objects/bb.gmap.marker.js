@@ -169,8 +169,7 @@ BB.gmap.marker.prototype.display = function() {
     }
     var options = {
         map: this.controller().map(),
-        position: new google.maps.LatLng(_data.coords[0], _data.coords[1]),
-        optimized: false
+        position: new google.maps.LatLng(_data.coords[0], _data.coords[1])
     };
 
     options = this.extend(options, _data);
@@ -346,7 +345,6 @@ BB.gmap.marker.prototype.dragend = function(event) {
 BB.gmap.marker.prototype.onclick = function(event) {
     // Scope
     var that = this.bbmarker;
-
     var _data = that.data();
 
     if (typeof _data.onclick == 'function') {
@@ -354,7 +352,6 @@ BB.gmap.marker.prototype.onclick = function(event) {
     } else if (typeof _data.onclick == 'string' && typeof window[_data.onclick] == 'function') {
         window[_data.onclick](that, event);
     }
-
     if (_data.infobox) {
         if (that.__INFOBOX) {
             if (that.__INFOBOX.map) {
@@ -371,23 +368,35 @@ BB.gmap.marker.prototype.onclick = function(event) {
             BB.gmap.statics.infobox_loaded = true;
         }
 
+        if (typeof _data.infobox == 'function') {
+            _data.infobox = _data.infobox(that.data());
+        }
+
         if (typeof _data.infobox == 'string') {
-            _data.infobox = document.getElementById(_data.infobox);
+            var infobox = document.getElementById(_data.infobox);
+            if (!infobox) {
+                infobox = document.createElement('div');
+                infobox.style.position = 'absolute'; // Or this wont display corretly
+                infobox.innerHTML = _data.infobox;
+            }
+            _data.infobox = infobox;
         }
 
         var infobox_options = {};
         if (_data.infobox_options) {
             infobox_options = _data.infobox_options;
         }
+        
 
         // Default placement
         if (!infobox_options.offsetY) {
-            infobox_options.offsetY = -that.icon().height;
+            infobox_options.offsetY = that.icon().height;
         }
 
         if (!infobox_options.offsetX) {
-            infobox_options.offsetX = -(that.icon().width / 2);
+            infobox_options.offsetX = (that.icon().width / 2);
         }
+
         infobox_options.map = that.controller().map();
         infobox_options.position = that.get_position().getAt(0).getAt(0);
         that.__INFOBOX = new BB.gmap.infobox(_data.infobox, infobox_options);

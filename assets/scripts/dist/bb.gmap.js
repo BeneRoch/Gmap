@@ -1426,17 +1426,34 @@ BB.gmap.infobox = function(elem, opts) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
     google.maps.OverlayView.call(this);
 
+    // Defaults
+    opts.offsetY = opts.offsetY || 0;
+    opts.offsetX = opts.offsetX || 0;
+    opts.multiple = opts.multiple || false;
+
     // Remember options
     this.opts = opts;
 
-    this._height = elem.offsetHeight;
-    this._width = elem.offsetWidth;
+    if (typeof this.opts.placement == 'undefined') {
+        // Possible:
+        // top center
+        // top left
+        // top right
+        // center center
+        // center left
+        // center right
+        // bottom center
+        // bottom left
+        // bottom right
+        // over center
+        // over right
+        // over left
+        // under center
+        // under left
+        // under right
+        this.opts.placement = 'top center';
+    }
 
-    opts.offsetY = opts.offsetY || 0;
-    opts.offsetX = opts.offsetX || 0;
-
-    this._offsetY = -(parseInt(this._height) - parseFloat(opts.offsetY));
-    this._offsetX = -(parseInt(this._width / 2) - parseFloat(opts.offsetX));
 
     this.__MAP = opts.map;
 
@@ -1447,6 +1464,17 @@ BB.gmap.infobox = function(elem, opts) {
     this._bounds_changed_listener = google.maps.event.addListener(this.__MAP, "bounds_changed", function() {
         return that.panMap.apply(that);
     });
+
+    if (!this.opts.multiple) {
+        // Close infobox if another is opened
+        this._infobox_open_listener = google.maps.event.addListener(this.__MAP, "infobox_opened", function(e) {
+            // console.log(e);
+            if (e.elem != that) {
+                that.setMap(null);
+            }
+            // return that.panMap.apply(that);
+        });
+    }
 
     // Set map.
     this.set_map(opts.map);
@@ -1483,6 +1511,8 @@ function init_infoBox() {
 
     BB.gmap.infobox.prototype.draw = function() {
         this.createElement();
+
+        google.maps.event.trigger(this.__MAP, 'infobox_opened', { elem: this });
         // if (!this._div) return;
 
         var pixPosition = this.getProjection().fromLatLngToDivPixel(this.opts.position);
@@ -1510,14 +1540,50 @@ function init_infoBox() {
             // Set a class for CSS
             var infobox_class = 'gmap_infobox';
             div.setAttribute('class', infobox_class);
+            div.appendChild(this.__ELEM);
 
-            contentDiv = document.createElement("div");
-            $(contentDiv).html(this.__ELEM.innerHTML);
 
-            div.appendChild(contentDiv);
-            contentDiv.style.display = 'block';
-            div.style.display = 'none';
+            // div.style.display = 'none';
             panes.floatPane.appendChild(div);
+
+            this._height = this.__ELEM.offsetHeight;
+            this._width = this.__ELEM.offsetWidth;
+            var position = this.opts.placement.split(' ');
+
+            switch (position[0]) {
+                case 'top':
+                    this._offsetY =  -parseFloat(this.opts.offsetY);
+                break;
+                case 'over':
+                    this._offsetY =  -parseFloat(this.opts.offsetY) - parseInt(this._height);
+                break;
+                case 'bottom':
+                    this._offsetY = - parseFloat(this._height);
+                break;
+                case 'under':
+                    this._offsetY =  0;
+                break;
+                case 'center':
+                    this._offsetY =  -parseFloat(this.opts.offsetY)/2 - parseInt(this._height)/2;
+                break;
+            }
+            switch (position[1]) {
+                case 'right':
+                    this._offsetX = (parseFloat(this.opts.offsetX)) - parseInt(this._width);
+                break;
+                case 'left':
+                    this._offsetX = -(parseFloat(this.opts.offsetX));
+                break;
+                case 'center':
+                    this._offsetX = - (parseInt(this._width)/2);
+                break;
+                case 'out-right':
+                    this._offsetX = (parseFloat(this.opts.offsetX));;
+                break;
+                case 'out-left':
+                    this._offsetX = -(parseFloat(this.opts.offsetX))-parseInt(this._width);
+                break;
+            }
             this.panMap();
         } else if (div.parentNode != panes.floatPane) {
             // The panes have changed.  Move the div.
@@ -1955,8 +2021,7 @@ BB.gmap.marker.prototype.display = function() {
     }
     var options = {
         map: this.controller().map(),
-        position: new google.maps.LatLng(_data.coords[0], _data.coords[1]),
-        optimized: false
+        position: new google.maps.LatLng(_data.coords[0], _data.coords[1])
     };
 
     options = this.extend(options, _data);
@@ -2132,7 +2197,6 @@ BB.gmap.marker.prototype.dragend = function(event) {
 BB.gmap.marker.prototype.onclick = function(event) {
     // Scope
     var that = this.bbmarker;
-
     var _data = that.data();
 
     if (typeof _data.onclick == 'function') {
@@ -2140,7 +2204,6 @@ BB.gmap.marker.prototype.onclick = function(event) {
     } else if (typeof _data.onclick == 'string' && typeof window[_data.onclick] == 'function') {
         window[_data.onclick](that, event);
     }
-
     if (_data.infobox) {
         if (that.__INFOBOX) {
             if (that.__INFOBOX.map) {
@@ -2157,23 +2220,35 @@ BB.gmap.marker.prototype.onclick = function(event) {
             BB.gmap.statics.infobox_loaded = true;
         }
 
+        if (typeof _data.infobox == 'function') {
+            _data.infobox = _data.infobox(that.data());
+        }
+
         if (typeof _data.infobox == 'string') {
-            _data.infobox = document.getElementById(_data.infobox);
+            var infobox = document.getElementById(_data.infobox);
+            if (!infobox) {
+                infobox = document.createElement('div');
+                infobox.style.position = 'absolute'; // Or this wont display corretly
+                infobox.innerHTML = _data.infobox;
+            }
+            _data.infobox = infobox;
         }
 
         var infobox_options = {};
         if (_data.infobox_options) {
             infobox_options = _data.infobox_options;
         }
+        
 
         // Default placement
         if (!infobox_options.offsetY) {
-            infobox_options.offsetY = -that.icon().height;
+            infobox_options.offsetY = that.icon().height;
         }
 
         if (!infobox_options.offsetX) {
-            infobox_options.offsetX = -(that.icon().width / 2);
+            infobox_options.offsetX = (that.icon().width / 2);
         }
+
         infobox_options.map = that.controller().map();
         infobox_options.position = that.get_position().getAt(0).getAt(0);
         that.__INFOBOX = new BB.gmap.infobox(_data.infobox, infobox_options);
@@ -2351,6 +2426,15 @@ BB.gmap.richmarker.prototype.display = function() {
 
     options = this.extend(options, _data);
 
+    if (typeof options.html == 'function') {
+        console.log(options.html(_data));
+        options.html = options.html(_data);
+    }
+
+    if (typeof options.selected_html == 'function') {
+        options.selected_html = options.selected_html(_data);
+    }
+
     if (typeof this.object() != 'undefined') {
         this.object().setOptions(options);
     } else {
@@ -2437,6 +2521,13 @@ BB.gmap.richmarker.prototype.blur = function() {
     this.object().setHtml(this.data('html'));
 };
 
+BB.gmap.richmarker.prototype.icon = function() {
+    return {
+        height: this.object().div.offsetHeight,
+        width: this.object().div.offsetWidth
+    }
+};
+
 
 /**
  * Expecting:
@@ -2467,16 +2558,16 @@ customMarker = function(data) {
 
         BB.gmap.customMarker.prototype = new google.maps.OverlayView();
         BB.gmap.customMarker.prototype.draw = function() {
+            this.setHtml(this.html);
+        };
 
+        BB.gmap.customMarker.prototype.setHtml = function(html) {
             var self = this;
             var div = this.div;
             if (!div) {
-
                 div = document.createElement('div');
                 div.style.position = 'absolute';
                 div.style.cursor = 'pointer';
-                div.innerHTML = this.html;
-
                 google.maps.event.addDomListener(div, "click", function(event) {
                     event.stopPropagation();
                     event.preventDefault();
@@ -2485,30 +2576,19 @@ customMarker = function(data) {
                 var panes = this.getPanes();
                 panes.overlayImage.appendChild(div);
             }
+            div.innerHTML = this.html;
 
             var point = this.getProjection().fromLatLngToDivPixel(this.latlng);
 
             if (point) {
                 var height = div.offsetHeight;
                 var width = div.offsetWidth;
-                div.style.left = point.x - (width / 2) + 'px';
+
+                div.style.left = point.x - (width/ 2) + 'px';
                 div.style.top = point.y - (height) + 'px';
             }
 
             this.div = div;
-        };
-
-        BB.gmap.customMarker.prototype.setHtml = function(html) {
-            var div = this.div;
-            this.div.innerHTML = html;
-            var point = this.getProjection().fromLatLngToDivPixel(this.latlng);
-
-            if (point) {
-                var height = div.offsetHeight;
-                var width = div.offsetWidth;
-                div.style.left = point.x - (width / 2) + 'px';
-                div.style.top = point.y - (height) + 'px';
-            }
         }
 
         BB.gmap.customMarker.prototype.remove = function() {

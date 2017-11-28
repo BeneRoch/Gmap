@@ -866,7 +866,8 @@ BB.gmap.controller.prototype.activate_clusterer = function(options) {
         this.clusterer().clearMarkers();
     }
     var markers = this.get_all_markers();
-    this.set_clusterer(new MarkerClusterer(this.map(), markers));
+    var clusterer_options = this.data('clusterer_options') || {};
+    this.set_clusterer(new MarkerClusterer(this.map(), markers, clusterer_options));
     return this;
 }
 

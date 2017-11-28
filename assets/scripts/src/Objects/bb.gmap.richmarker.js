@@ -95,6 +95,15 @@ BB.gmap.richmarker.prototype.display = function() {
 
     options = this.extend(options, _data);
 
+    if (typeof options.html == 'function') {
+        console.log(options.html(_data));
+        options.html = options.html(_data);
+    }
+
+    if (typeof options.selected_html == 'function') {
+        options.selected_html = options.selected_html(_data);
+    }
+
     if (typeof this.object() != 'undefined') {
         this.object().setOptions(options);
     } else {
@@ -181,6 +190,13 @@ BB.gmap.richmarker.prototype.blur = function() {
     this.object().setHtml(this.data('html'));
 };
 
+BB.gmap.richmarker.prototype.icon = function() {
+    return {
+        height: this.object().div.offsetHeight,
+        width: this.object().div.offsetWidth
+    }
+};
+
 
 /**
  * Expecting:
@@ -211,16 +227,16 @@ customMarker = function(data) {
 
         BB.gmap.customMarker.prototype = new google.maps.OverlayView();
         BB.gmap.customMarker.prototype.draw = function() {
+            this.setHtml(this.html);
+        };
 
+        BB.gmap.customMarker.prototype.setHtml = function(html) {
             var self = this;
             var div = this.div;
             if (!div) {
-
                 div = document.createElement('div');
                 div.style.position = 'absolute';
                 div.style.cursor = 'pointer';
-                div.innerHTML = this.html;
-
                 google.maps.event.addDomListener(div, "click", function(event) {
                     event.stopPropagation();
                     event.preventDefault();
@@ -229,30 +245,19 @@ customMarker = function(data) {
                 var panes = this.getPanes();
                 panes.overlayImage.appendChild(div);
             }
+            div.innerHTML = this.html;
 
             var point = this.getProjection().fromLatLngToDivPixel(this.latlng);
 
             if (point) {
                 var height = div.offsetHeight;
                 var width = div.offsetWidth;
-                div.style.left = point.x - (width / 2) + 'px';
+
+                div.style.left = point.x - (width/ 2) + 'px';
                 div.style.top = point.y - (height) + 'px';
             }
 
             this.div = div;
-        };
-
-        BB.gmap.customMarker.prototype.setHtml = function(html) {
-            var div = this.div;
-            this.div.innerHTML = html;
-            var point = this.getProjection().fromLatLngToDivPixel(this.latlng);
-
-            if (point) {
-                var height = div.offsetHeight;
-                var width = div.offsetWidth;
-                div.style.left = point.x - (width / 2) + 'px';
-                div.style.top = point.y - (height) + 'px';
-            }
         }
 
         BB.gmap.customMarker.prototype.remove = function() {

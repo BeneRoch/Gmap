@@ -43,17 +43,34 @@ BB.gmap.infobox = function(elem, opts) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
     google.maps.OverlayView.call(this);
 
+    // Defaults
+    opts.offsetY = opts.offsetY || 0;
+    opts.offsetX = opts.offsetX || 0;
+    opts.multiple = opts.multiple || false;
+
     // Remember options
     this.opts = opts;
 
-    this._height = elem.offsetHeight;
-    this._width = elem.offsetWidth;
+    if (typeof this.opts.placement == 'undefined') {
+        // Possible:
+        // top center
+        // top left
+        // top right
+        // center center
+        // center left
+        // center right
+        // bottom center
+        // bottom left
+        // bottom right
+        // over center
+        // over right
+        // over left
+        // under center
+        // under left
+        // under right
+        this.opts.placement = 'top center';
+    }
 
-    opts.offsetY = opts.offsetY || 0;
-    opts.offsetX = opts.offsetX || 0;
-
-    this._offsetY = -(parseInt(this._height) - parseFloat(opts.offsetY));
-    this._offsetX = -(parseInt(this._width / 2) - parseFloat(opts.offsetX));
 
     this.__MAP = opts.map;
 
@@ -64,6 +81,17 @@ BB.gmap.infobox = function(elem, opts) {
     this._bounds_changed_listener = google.maps.event.addListener(this.__MAP, "bounds_changed", function() {
         return that.panMap.apply(that);
     });
+
+    if (!this.opts.multiple) {
+        // Close infobox if another is opened
+        this._infobox_open_listener = google.maps.event.addListener(this.__MAP, "infobox_opened", function(e) {
+            // console.log(e);
+            if (e.elem != that) {
+                that.setMap(null);
+            }
+            // return that.panMap.apply(that);
+        });
+    }
 
     // Set map.
     this.set_map(opts.map);
@@ -100,6 +128,8 @@ function init_infoBox() {
 
     BB.gmap.infobox.prototype.draw = function() {
         this.createElement();
+
+        google.maps.event.trigger(this.__MAP, 'infobox_opened', { elem: this });
         // if (!this._div) return;
 
         var pixPosition = this.getProjection().fromLatLngToDivPixel(this.opts.position);
@@ -127,14 +157,50 @@ function init_infoBox() {
             // Set a class for CSS
             var infobox_class = 'gmap_infobox';
             div.setAttribute('class', infobox_class);
+            div.appendChild(this.__ELEM);
 
-            contentDiv = document.createElement("div");
-            $(contentDiv).html(this.__ELEM.innerHTML);
 
-            div.appendChild(contentDiv);
-            contentDiv.style.display = 'block';
-            div.style.display = 'none';
+            // div.style.display = 'none';
             panes.floatPane.appendChild(div);
+
+            this._height = this.__ELEM.offsetHeight;
+            this._width = this.__ELEM.offsetWidth;
+            var position = this.opts.placement.split(' ');
+
+            switch (position[0]) {
+                case 'top':
+                    this._offsetY =  -parseFloat(this.opts.offsetY);
+                break;
+                case 'over':
+                    this._offsetY =  -parseFloat(this.opts.offsetY) - parseInt(this._height);
+                break;
+                case 'bottom':
+                    this._offsetY = - parseFloat(this._height);
+                break;
+                case 'under':
+                    this._offsetY =  0;
+                break;
+                case 'center':
+                    this._offsetY =  -parseFloat(this.opts.offsetY)/2 - parseInt(this._height)/2;
+                break;
+            }
+            switch (position[1]) {
+                case 'right':
+                    this._offsetX = (parseFloat(this.opts.offsetX)) - parseInt(this._width);
+                break;
+                case 'left':
+                    this._offsetX = -(parseFloat(this.opts.offsetX));
+                break;
+                case 'center':
+                    this._offsetX = - (parseInt(this._width)/2);
+                break;
+                case 'out-right':
+                    this._offsetX = (parseFloat(this.opts.offsetX));;
+                break;
+                case 'out-left':
+                    this._offsetX = -(parseFloat(this.opts.offsetX))-parseInt(this._width);
+                break;
+            }
             this.panMap();
         } else if (div.parentNode != panes.floatPane) {
             // The panes have changed.  Move the div.
