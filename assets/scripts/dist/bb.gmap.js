@@ -408,6 +408,8 @@ BB.gmap.controller = function(container, data) {
     // MarkerClusterer
     this.__CLUSTERER = undefined;
 
+    this.xhrs = undefined;
+
     this.set_data(data);
 
     return this;
@@ -460,7 +462,7 @@ BB.gmap.controller.prototype.place_loaded = function(obj) {
     obj.set_data({
         loaded: true
     });
-    if (this.check_loaded_places()) {
+    if (this.check_loaded_places() && this.data('tiles_loaded')) {
         this._ready();
     }
 
@@ -479,10 +481,6 @@ BB.gmap.controller.prototype.check_loaded_places = function() {
     this._loop_all(function(obj) {
         all_loaded = !!(all_loaded && obj.data('loaded'));
     });
-
-    // Make sure EVERYTHING is ready.
-    all_loaded = (all_loaded && this.data('tiles_loaded'));
-
     return all_loaded;
 }
 
@@ -616,6 +614,70 @@ BB.gmap.controller.prototype.set_styles = function(styles) {
     return this;
 };
 
+/**
+ * [add_by_url description]
+ * @param {[type]} url [description]
+ * @param {[type]} map [description]
+ */
+BB.gmap.controller.prototype.add_by_url = function(url, placesIdent, map)
+{
+    var map = {
+        id: 'id',
+        type: 'type',
+        coords: 'coords',
+        raw: 'raw.mLatitude',
+        date: 'raw.mDate'
+    }
+
+
+    var mapping = function(item, value) {
+        var splitted, length, i, previous;
+
+        splitted    = value.split('.');
+        length      = splitted.length;
+        i           = 0;
+        previous    = item;
+
+        for (; i<length;i++) {
+            if (typeof previous[splitted[i]] === 'undefined') {
+                return item;
+            }
+            previous = previous[splitted[i]];
+        }
+
+        return previous;
+    }
+
+    var placeMap = function(item, index) {
+        var out = {};
+
+        for (var key in map) {
+            out[key] = mapping(item, map[key]);
+        }
+
+        return out;
+    }
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = JSON.parse(this.responseText);
+            if (typeof placesIdent === 'string' && placesIdent != '') {
+                result = mapping(result, placesIdent)
+            }
+            if (result.hasOwnProperty('map')) {
+                result = result.map(placeMap);
+            }
+        }
+    };
+
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
+    // xhttp.setRequestHeader("Accept", "application/json");
+    xhttp.send();
+
+    // this.xhrs.push(xhttp);
+}
 
 /**
  * places :
@@ -859,7 +921,9 @@ BB.gmap.controller.prototype.listeners = function() {
         that.set_data({
             'tiles_loaded': true
         });
-        that._ready();
+        if (that.check_loaded_places()) {
+            that._ready();
+        }
     });
 
     // Map keypress listeners
@@ -1134,10 +1198,16 @@ BB.gmap.controller.prototype.fit_bounds = function() {
             return false;
         }
         var path;
-        for (var i = 0; i < paths.getLength(); i++) {
-            path = paths.getAt(i);
-            for (var ii = 0; ii < path.getLength(); ii++) {
-                bounds.extend(path.getAt(ii));
+
+        // Worst fix ever.
+        if (paths instanceof google.maps.LatLng) {
+            bounds.extend(paths);
+        } else {
+            for (var i = 0; i < paths.getLength(); i++) {
+                path = paths.getAt(i);
+                for (var ii = 0; ii < path.getLength(); ii++) {
+                    bounds.extend(path.getAt(ii));
+                }
             }
         }
         k++;
@@ -1203,7 +1273,8 @@ BB.gmap.controller.prototype.activate_clusterer = function(options) {
         this.clusterer().clearMarkers();
     }
     var markers = this.get_all_markers();
-    this.set_clusterer(new MarkerClusterer(this.map(), markers));
+    var clusterer_options = this.data('clusterer_options') || {};
+    this.set_clusterer(new MarkerClusterer(this.map(), markers, clusterer_options));
     return this;
 }
 
@@ -1408,19 +1479,17 @@ BB.gmap.statics = BB.gmap.statics || {};
  * - `map` google map object
  * - `index`
  */
-BB.gmap.infobox = function(elem, opts) {
+BB.gmap.infobox = function(elem, opts, marker) {
     BB.gmap.statics;
     this.__MAP = undefined;
+    this.__MARKER = marker;
 
-    // Let's get rid of jQuery for this one
-    if (elem instanceof jQuery) {
-        // Select DOMElement
-        elem = elem.get(0);
-    }
+    // Original infobox content
+    this.infoboxContent = elem;
 
     // Just remember this.
     // We wanna take INNERHTML of that Document Element
-    this.__ELEM = elem;
+    this.__ELEM = undefined;
 
     // Extend
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
@@ -1468,7 +1537,6 @@ BB.gmap.infobox = function(elem, opts) {
     if (!this.opts.multiple) {
         // Close infobox if another is opened
         this._infobox_open_listener = google.maps.event.addListener(this.__MAP, "infobox_opened", function(e) {
-            // console.log(e);
             if (e.elem != that) {
                 that.setMap(null);
             }
@@ -1499,15 +1567,40 @@ function init_infoBox() {
      * Sets the map for the infobox
      *
      */
+    BB.gmap.infobox.prototype.set_position = function(position) {
+        if (!position) {
+            return this;
+        }
+
+        if (typeof position == 'string') {
+            position = position.split(',');
+        }
+
+        if (!(position instanceof google.maps.LatLng)) {
+            if (typeof position[0] == 'undefined' || typeof position[1] == 'undefined') {
+                return this;
+            }
+            position = new google.maps.LatLng(position[0], position[1]);
+        }
+
+
+        this.opts.position = position;
+
+        if (this.map) {
+            this.draw();
+        }
+        return this;
+    };
+
+
+    /**
+     * Sets the map for the infobox
+     *
+     */
     BB.gmap.infobox.prototype.set_map = function(map) {
         this.__MAP = map;
         this.setMap(this.__MAP);
     };
-
-    BB.gmap.infobox.prototype.map = function() {
-        return this.__MAP;
-    };
-
 
     BB.gmap.infobox.prototype.draw = function() {
         this.createElement();
@@ -1525,78 +1618,124 @@ function init_infoBox() {
         this._div.style.display = 'block';
         this._div.style.zIndex = 1;
     };
+
     BB.gmap.infobox.prototype.createElement = function() {
+        // Generate infobox content
+        this.generateInfoboxContent();
+
         var panes = this.getPanes();
         var div = this._div;
+
+        if (div) {
+            if (div.parentNode != panes.floatPane) {
+                // The panes have changed.  Move the div.
+                try {
+                    div.parentNode.removeChild(div);
+                } catch (err) {
+
+                }
+            }
+        }
+
         if (!div) {
-            // This does not handle changing panes.  You can set the map to be null and
-            // then reset the map to move the div.
             div = this._div = document.createElement("div");
             div.style.border = "0";
             div.style.position = "absolute";
-            div.style.width = this._width + "px";
-            div.style.height = this._height + "px";
-
-            // Set a class for CSS
-            var infobox_class = 'gmap_infobox';
-            div.setAttribute('class', infobox_class);
-            div.appendChild(this.__ELEM);
-
-
-            // div.style.display = 'none';
-            panes.floatPane.appendChild(div);
-
-            this._height = this.__ELEM.offsetHeight;
-            this._width = this.__ELEM.offsetWidth;
-            var position = this.opts.placement.split(' ');
-
-            switch (position[0]) {
-                case 'top':
-                    this._offsetY =  -parseFloat(this.opts.offsetY);
-                break;
-                case 'over':
-                    this._offsetY =  -parseFloat(this.opts.offsetY) - parseInt(this._height);
-                break;
-                case 'bottom':
-                    this._offsetY = - parseFloat(this._height);
-                break;
-                case 'under':
-                    this._offsetY =  0;
-                break;
-                case 'center':
-                    this._offsetY =  -parseFloat(this.opts.offsetY)/2 - parseInt(this._height)/2;
-                break;
-            }
-            switch (position[1]) {
-                case 'right':
-                    this._offsetX = (parseFloat(this.opts.offsetX)) - parseInt(this._width);
-                break;
-                case 'left':
-                    this._offsetX = -(parseFloat(this.opts.offsetX));
-                break;
-                case 'center':
-                    this._offsetX = - (parseInt(this._width)/2);
-                break;
-                case 'out-right':
-                    this._offsetX = (parseFloat(this.opts.offsetX));;
-                break;
-                case 'out-left':
-                    this._offsetX = -(parseFloat(this.opts.offsetX))-parseInt(this._width);
-                break;
-            }
-            this.panMap();
-        } else if (div.parentNode != panes.floatPane) {
-            // The panes have changed.  Move the div.
-            try {
-                div.parentNode.removeChild(div);
-            } catch (err) {
-
-            }
-            panes.floatPane.appendChild(div);
-        } else {
-            // The panes have not changed, so no need to create or move the div.
         }
+
+        div.innerHTML = '';
+
+        // Add content right on
+        div.appendChild(this.__ELEM);
+        panes.floatPane.appendChild(div);
+
+        // Place content from with and height
+        this._height = this.__ELEM.offsetHeight;
+        this._width = this.__ELEM.offsetWidth;
+
+        div.style.width = this._width + "px";
+        div.style.height = this._height + "px";
+
+        var infobox_class = 'gmap_infobox';
+        div.setAttribute('class', infobox_class);
+
+        // div.style.display = 'none';
+        var position = this.opts.placement.split(' ');
+
+        switch (position[0]) {
+            case 'top':
+                this._offsetY =  -parseFloat(this.opts.offsetY);
+            break;
+            case 'over':
+                this._offsetY =  -parseFloat(this.opts.offsetY) - parseInt(this._height);
+            break;
+            case 'bottom':
+                this._offsetY = - parseFloat(this._height);
+            break;
+            case 'under':
+                this._offsetY =  0;
+            break;
+            case 'center':
+                this._offsetY =  -parseFloat(this.opts.offsetY)/2 - parseInt(this._height)/2;
+            break;
+        }
+        switch (position[1]) {
+            case 'right':
+                this._offsetX = (parseFloat(this.opts.offsetX)) - parseInt(this._width);
+            break;
+            case 'left':
+                this._offsetX = -(parseFloat(this.opts.offsetX));
+            break;
+            case 'center':
+                this._offsetX = - (parseInt(this._width)/2);
+            break;
+            case 'out-right':
+                this._offsetX = (parseFloat(this.opts.offsetX));;
+            break;
+            case 'out-left':
+                this._offsetX = -(parseFloat(this.opts.offsetX))-parseInt(this._width);
+            break;
+        }
+        this.panMap();
     };
+
+    BB.gmap.infobox.prototype.generateInfoboxContent = function() {
+        var elem = this.infoboxContent;
+        if (typeof elem == 'function') {
+            elem = elem(this.__MARKER.data());
+        }
+
+        if (typeof elem == 'number') {
+            elem = elem.toString();
+        }
+
+        if (typeof elem == 'string') {
+            // Does the infobox exists in the dom already?
+            var infobox = document.getElementById(elem);
+
+            // If not, create a DIV element with it.
+            if (!infobox) {
+                infobox = document.createElement('div');
+                infobox.style.position = 'absolute'; // Or this wont display corretly
+                infobox.innerHTML = elem;
+            }
+            elem = infobox;
+        }
+
+        // Let's get rid of jQuery for this one
+        if (elem instanceof jQuery) {
+            // Select DOMElement
+            elem = elem.get(0);
+        }
+
+        this.__ELEM = elem;
+        return this;
+    }
+
+    BB.gmap.infobox.prototype.refresh = function()
+    {
+        this.generateInfoboxContent();
+    }
 
     BB.gmap.infobox.prototype.panMap = function() {
         // if we go beyond map, pan map
@@ -1988,7 +2127,6 @@ BB.gmap.marker.prototype.set_image = function(src, dimensions) {
 
     img.onload = function() {
         this.data.set_icon(this);
-        this.data.display();
     };
 
     img.onerror = function() {
@@ -2051,8 +2189,8 @@ BB.gmap.marker.prototype.display = function() {
     }
 
     if (this.icon().src) {
-        var width = this.icon().width;
-        var height = this.icon().height;
+        var width = parseFloat(this.icon().width);
+        var height = parseFloat(this.icon().height);
         options.icon = new google.maps.MarkerImage(
             // image src
             this.icon().src,
@@ -2064,7 +2202,6 @@ BB.gmap.marker.prototype.display = function() {
             new google.maps.Point((width / 2), height),
             new google.maps.Size(width, height)
         );
-
     }
 
     if (typeof this.object() != 'undefined') {
@@ -2209,6 +2346,7 @@ BB.gmap.marker.prototype.onclick = function(event) {
             if (that.__INFOBOX.map) {
                 that.__INFOBOX.set_map(null);
             } else {
+                that.__INFOBOX.set_position(that.object().getPosition());
                 that.__INFOBOX.set_map(that.controller().map());
             }
             that.focus();
@@ -2220,19 +2358,19 @@ BB.gmap.marker.prototype.onclick = function(event) {
             BB.gmap.statics.infobox_loaded = true;
         }
 
-        if (typeof _data.infobox == 'function') {
-            _data.infobox = _data.infobox(that.data());
-        }
+        // if (typeof _data.infobox == 'function') {
+        //     _data.infobox = _data.infobox(that.data());
+        // }
 
-        if (typeof _data.infobox == 'string') {
-            var infobox = document.getElementById(_data.infobox);
-            if (!infobox) {
-                infobox = document.createElement('div');
-                infobox.style.position = 'absolute'; // Or this wont display corretly
-                infobox.innerHTML = _data.infobox;
-            }
-            _data.infobox = infobox;
-        }
+        // if (typeof _data.infobox == 'string') {
+        //     var infobox = document.getElementById(_data.infobox);
+        //     if (!infobox) {
+        //         infobox = document.createElement('div');
+        //         infobox.style.position = 'absolute'; // Or this wont display corretly
+        //         infobox.innerHTML = _data.infobox;
+        //     }
+        //     _data.infobox = infobox;
+        // }
 
         var infobox_options = {};
         if (_data.infobox_options) {
@@ -2250,8 +2388,8 @@ BB.gmap.marker.prototype.onclick = function(event) {
         }
 
         infobox_options.map = that.controller().map();
-        infobox_options.position = that.get_position().getAt(0).getAt(0);
-        that.__INFOBOX = new BB.gmap.infobox(_data.infobox, infobox_options);
+        infobox_options.position = that.get_position();
+        that.__INFOBOX = new BB.gmap.infobox(_data.infobox, infobox_options, that);
     }
 
     that.focus();
@@ -2318,16 +2456,39 @@ BB.gmap.marker.prototype.get_bounds = function() {
  *
  */
 BB.gmap.marker.prototype.get_position = function() {
-    var position = new google.maps.MVCArray();
-    var array = new google.maps.MVCArray();
-
     if (!this.object()) {
-        return false;
+        return ;
     }
+    return this.object().getPosition();
+};
 
-    position.push(this.object().getPosition());
-    array.push(position);
-    return array;
+BB.gmap.marker.prototype.set_position = function(position) {
+        if (!position) {
+            return this;
+        }
+
+        if (typeof position == 'string') {
+            position = position.split(',');
+        }
+
+        if (!(position instanceof google.maps.LatLng)) {
+            if (typeof position[0] == 'undefined' || typeof position[1] == 'undefined') {
+                return this;
+            }
+            position = new google.maps.LatLng(position[0], position[1]);
+        }
+
+
+        this.object().setPosition(position);
+        this.set_data({
+            coords: [position.lat(), position.lng()]
+        });
+
+        if (this.__INFOBOX) {
+            this.__INFOBOX.set_position(position);
+        }
+
+        return this;
 };
 /**
  * @name BB Gmap controller
@@ -2427,7 +2588,6 @@ BB.gmap.richmarker.prototype.display = function() {
     options = this.extend(options, _data);
 
     if (typeof options.html == 'function') {
-        console.log(options.html(_data));
         options.html = options.html(_data);
     }
 
@@ -2445,6 +2605,7 @@ BB.gmap.richmarker.prototype.display = function() {
     if (!this._listeners) {
         this.listeners();
         this._listeners = true;
+        this.controller().place_loaded(this);
     }
 
     // From BB.gmap.line
@@ -2596,6 +2757,11 @@ customMarker = function(data) {
                 this.div.parentNode.removeChild(this.div);
                 this.div = null;
             }
+        };
+
+        BB.gmap.customMarker.prototype.setPosition = function(latLng) {
+            this.latlng = latLng;
+            this.draw();
         };
 
         BB.gmap.customMarker.prototype.getPosition = function() {
@@ -2867,36 +3033,37 @@ BB.gmap.line.prototype.add_point = function(path, index) {
     paths.insertAt(index, path);
 
     // Add marker on top of it
-    var marker = new BB.gmap.marker({
-        coords: [path.lat(), path.lng()],
-        draggable: true, // The whole point of these.
+    if (this.data('editable')) {
+        var marker = new BB.gmap.marker({
+            coords: [path.lat(), path.lng()],
+            draggable: true, // The whole point of these.
 
-        // icon: 'assets/images/marker-tri.png',
-        icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 4
-        },
+            // icon: 'assets/images/marker-tri.png',
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 4
+            },
 
-        hidden: !(this.data('editable')),
-        editable: true,
-        ondragend: function(marker, event) {
-            that.move_point(marker.object().index, [event.latLng.lat(), event.latLng.lng()]);
-        },
-        ondelete: function(marker) {
-            that.remove_point(marker.object().index);
-            that.focus();
+            editable: true,
+            ondragend: function(marker, event) {
+                that.move_point(marker.object().index, [event.latLng.lat(), event.latLng.lng()]);
+            },
+            ondelete: function(marker) {
+                that.remove_point(marker.object().index);
+                that.focus();
 
-            if (!that.get_paths().length) {
-                that.delete();
-            }
-        },
-        index: index
-    }, that.controller());
+                if (!that.get_paths().length) {
+                    that.delete();
+                }
+            },
+            index: index
+        }, that.controller());
 
-    if (!this.__MARKERS) {
-        this.__MARKERS = [];
+        if (!this.__MARKERS) {
+            this.__MARKERS = [];
+        }
+        this.__MARKERS[index] = marker;
     }
-    this.__MARKERS[index] = marker;
 
     return this;
 };

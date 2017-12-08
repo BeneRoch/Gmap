@@ -71,6 +71,8 @@ BB.gmap.controller = function(container, data) {
     // MarkerClusterer
     this.__CLUSTERER = undefined;
 
+    this.xhrs = undefined;
+
     this.set_data(data);
 
     return this;
@@ -123,7 +125,7 @@ BB.gmap.controller.prototype.place_loaded = function(obj) {
     obj.set_data({
         loaded: true
     });
-    if (this.check_loaded_places()) {
+    if (this.check_loaded_places() && this.data('tiles_loaded')) {
         this._ready();
     }
 
@@ -142,10 +144,6 @@ BB.gmap.controller.prototype.check_loaded_places = function() {
     this._loop_all(function(obj) {
         all_loaded = !!(all_loaded && obj.data('loaded'));
     });
-
-    // Make sure EVERYTHING is ready.
-    all_loaded = (all_loaded && this.data('tiles_loaded'));
-
     return all_loaded;
 }
 
@@ -279,6 +277,70 @@ BB.gmap.controller.prototype.set_styles = function(styles) {
     return this;
 };
 
+/**
+ * [add_by_url description]
+ * @param {[type]} url [description]
+ * @param {[type]} map [description]
+ */
+BB.gmap.controller.prototype.add_by_url = function(url, placesIdent, map)
+{
+    var map = {
+        id: 'id',
+        type: 'type',
+        coords: 'coords',
+        raw: 'raw.mLatitude',
+        date: 'raw.mDate'
+    }
+
+
+    var mapping = function(item, value) {
+        var splitted, length, i, previous;
+
+        splitted    = value.split('.');
+        length      = splitted.length;
+        i           = 0;
+        previous    = item;
+
+        for (; i<length;i++) {
+            if (typeof previous[splitted[i]] === 'undefined') {
+                return item;
+            }
+            previous = previous[splitted[i]];
+        }
+
+        return previous;
+    }
+
+    var placeMap = function(item, index) {
+        var out = {};
+
+        for (var key in map) {
+            out[key] = mapping(item, map[key]);
+        }
+
+        return out;
+    }
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = JSON.parse(this.responseText);
+            if (typeof placesIdent === 'string' && placesIdent != '') {
+                result = mapping(result, placesIdent)
+            }
+            if (result.hasOwnProperty('map')) {
+                result = result.map(placeMap);
+            }
+        }
+    };
+
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
+    // xhttp.setRequestHeader("Accept", "application/json");
+    xhttp.send();
+
+    // this.xhrs.push(xhttp);
+}
 
 /**
  * places :
@@ -522,7 +584,9 @@ BB.gmap.controller.prototype.listeners = function() {
         that.set_data({
             'tiles_loaded': true
         });
-        that._ready();
+        if (that.check_loaded_places()) {
+            that._ready();
+        }
     });
 
     // Map keypress listeners
@@ -797,10 +861,16 @@ BB.gmap.controller.prototype.fit_bounds = function() {
             return false;
         }
         var path;
-        for (var i = 0; i < paths.getLength(); i++) {
-            path = paths.getAt(i);
-            for (var ii = 0; ii < path.getLength(); ii++) {
-                bounds.extend(path.getAt(ii));
+
+        // Worst fix ever.
+        if (paths instanceof google.maps.LatLng) {
+            bounds.extend(paths);
+        } else {
+            for (var i = 0; i < paths.getLength(); i++) {
+                path = paths.getAt(i);
+                for (var ii = 0; ii < path.getLength(); ii++) {
+                    bounds.extend(path.getAt(ii));
+                }
             }
         }
         k++;

@@ -101,8 +101,8 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 						scale: 1,
 						strokeColor: 'gold',
 						strokeWeight: 14,
-						height: '20px',
-						width: '20px'
+						height: '10px',
+						width: '10px'
 					},
 					coords : [ 45.577997,-73.76850009999998 ]
 				}
@@ -135,6 +135,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 			},
 			// infobox: '<div style="background: blue;">test</div>',
 			infobox: function(data) {
+				return Math.random();
 				return data.ident;
 			},
 			infobox_options: {
@@ -232,7 +233,9 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 				}
 			}
 		});
-		map2.init().ready(function() { map2.fit_bounds() });
+		map2.init().ready(function() { 
+			map2.fit_bounds() 
+		});
 
 		map3 = new BB.gmap.controller(document.getElementById('map3'), {
 			use_clusterer: false,
@@ -241,10 +244,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 					x 	: 45.3712923,
 					y 	: -73.9820994
 				},
-				zoom: 12,
-				mapType 	: 'roadmap',
-				coordsType	: 'inpage', // array, json? (vs ul li)
-				map_mode	: 'default'
+				zoom: 10
 			}
 		});
 		map3.init();
@@ -258,20 +258,18 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 					x 	: 45.3712923,
 					y 	: -73.9820994
 				},
-				zoom: 12,
-				mapType 	: 'roadmap',
-				coordsType	: 'inpage', // array, json? (vs ul li)
-				map_mode	: 'default'
-			}
-		});
-		map4.init().ready(function() {
-			map4.fit_bounds();
+				zoom: 12
+			},
+			max_fitbounds_zoom: 14
 		});
 		map4.add_place_by_address('test3', '1870 iberville, montréal, qc', {
 			type : 'richmarker',
 			html: '<div style="background: red; height: 60px; width: 60px;">OOOOOH</div>',
 			selected_html: '<div style="background: red; height: 60px; width: 60px;">OOOOOH</div>',
 			infobox: $('<div style="background: blue;">test</div>')
+		});
+		map4.init().ready(function() {
+			map4.fit_bounds();
 		});
 		// map4.add_place_by_address('test5', '1749 iberville, montréal, qc', {
 		// 	type : 'marker',
@@ -295,5 +293,5 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 
 <!-- <script src="assets/scripts/dist/gmap.min.js"></script> -->
 <script src="assets/scripts/dist/bb.gmap.js"></script>
-<script src="http://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=fr&callback=initialize"></script>
+<script src="http://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=fr&callback=initialize&key=AIzaSyBEHKKmTQT6Mi8bASxDtInXthSKLaBlBus"></script>
 </html>

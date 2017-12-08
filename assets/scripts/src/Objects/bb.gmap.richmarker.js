@@ -96,7 +96,6 @@ BB.gmap.richmarker.prototype.display = function() {
     options = this.extend(options, _data);
 
     if (typeof options.html == 'function') {
-        console.log(options.html(_data));
         options.html = options.html(_data);
     }
 
@@ -114,6 +113,7 @@ BB.gmap.richmarker.prototype.display = function() {
     if (!this._listeners) {
         this.listeners();
         this._listeners = true;
+        this.controller().place_loaded(this);
     }
 
     // From BB.gmap.line
@@ -265,6 +265,11 @@ customMarker = function(data) {
                 this.div.parentNode.removeChild(this.div);
                 this.div = null;
             }
+        };
+
+        BB.gmap.customMarker.prototype.setPosition = function(latLng) {
+            this.latlng = latLng;
+            this.draw();
         };
 
         BB.gmap.customMarker.prototype.getPosition = function() {

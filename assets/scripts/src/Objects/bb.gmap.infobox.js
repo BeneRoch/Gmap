@@ -25,19 +25,17 @@ BB.gmap.statics = BB.gmap.statics || {};
  * - `map` google map object
  * - `index`
  */
-BB.gmap.infobox = function(elem, opts) {
+BB.gmap.infobox = function(elem, opts, marker) {
     BB.gmap.statics;
     this.__MAP = undefined;
+    this.__MARKER = marker;
 
-    // Let's get rid of jQuery for this one
-    if (elem instanceof jQuery) {
-        // Select DOMElement
-        elem = elem.get(0);
-    }
+    // Original infobox content
+    this.infoboxContent = elem;
 
     // Just remember this.
     // We wanna take INNERHTML of that Document Element
-    this.__ELEM = elem;
+    this.__ELEM = undefined;
 
     // Extend
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
@@ -85,7 +83,6 @@ BB.gmap.infobox = function(elem, opts) {
     if (!this.opts.multiple) {
         // Close infobox if another is opened
         this._infobox_open_listener = google.maps.event.addListener(this.__MAP, "infobox_opened", function(e) {
-            // console.log(e);
             if (e.elem != that) {
                 that.setMap(null);
             }
@@ -116,15 +113,40 @@ function init_infoBox() {
      * Sets the map for the infobox
      *
      */
+    BB.gmap.infobox.prototype.set_position = function(position) {
+        if (!position) {
+            return this;
+        }
+
+        if (typeof position == 'string') {
+            position = position.split(',');
+        }
+
+        if (!(position instanceof google.maps.LatLng)) {
+            if (typeof position[0] == 'undefined' || typeof position[1] == 'undefined') {
+                return this;
+            }
+            position = new google.maps.LatLng(position[0], position[1]);
+        }
+
+
+        this.opts.position = position;
+
+        if (this.map) {
+            this.draw();
+        }
+        return this;
+    };
+
+
+    /**
+     * Sets the map for the infobox
+     *
+     */
     BB.gmap.infobox.prototype.set_map = function(map) {
         this.__MAP = map;
         this.setMap(this.__MAP);
     };
-
-    BB.gmap.infobox.prototype.map = function() {
-        return this.__MAP;
-    };
-
 
     BB.gmap.infobox.prototype.draw = function() {
         this.createElement();
@@ -142,78 +164,124 @@ function init_infoBox() {
         this._div.style.display = 'block';
         this._div.style.zIndex = 1;
     };
+
     BB.gmap.infobox.prototype.createElement = function() {
+        // Generate infobox content
+        this.generateInfoboxContent();
+
         var panes = this.getPanes();
         var div = this._div;
+
+        if (div) {
+            if (div.parentNode != panes.floatPane) {
+                // The panes have changed.  Move the div.
+                try {
+                    div.parentNode.removeChild(div);
+                } catch (err) {
+
+                }
+            }
+        }
+
         if (!div) {
-            // This does not handle changing panes.  You can set the map to be null and
-            // then reset the map to move the div.
             div = this._div = document.createElement("div");
             div.style.border = "0";
             div.style.position = "absolute";
-            div.style.width = this._width + "px";
-            div.style.height = this._height + "px";
-
-            // Set a class for CSS
-            var infobox_class = 'gmap_infobox';
-            div.setAttribute('class', infobox_class);
-            div.appendChild(this.__ELEM);
-
-
-            // div.style.display = 'none';
-            panes.floatPane.appendChild(div);
-
-            this._height = this.__ELEM.offsetHeight;
-            this._width = this.__ELEM.offsetWidth;
-            var position = this.opts.placement.split(' ');
-
-            switch (position[0]) {
-                case 'top':
-                    this._offsetY =  -parseFloat(this.opts.offsetY);
-                break;
-                case 'over':
-                    this._offsetY =  -parseFloat(this.opts.offsetY) - parseInt(this._height);
-                break;
-                case 'bottom':
-                    this._offsetY = - parseFloat(this._height);
-                break;
-                case 'under':
-                    this._offsetY =  0;
-                break;
-                case 'center':
-                    this._offsetY =  -parseFloat(this.opts.offsetY)/2 - parseInt(this._height)/2;
-                break;
-            }
-            switch (position[1]) {
-                case 'right':
-                    this._offsetX = (parseFloat(this.opts.offsetX)) - parseInt(this._width);
-                break;
-                case 'left':
-                    this._offsetX = -(parseFloat(this.opts.offsetX));
-                break;
-                case 'center':
-                    this._offsetX = - (parseInt(this._width)/2);
-                break;
-                case 'out-right':
-                    this._offsetX = (parseFloat(this.opts.offsetX));;
-                break;
-                case 'out-left':
-                    this._offsetX = -(parseFloat(this.opts.offsetX))-parseInt(this._width);
-                break;
-            }
-            this.panMap();
-        } else if (div.parentNode != panes.floatPane) {
-            // The panes have changed.  Move the div.
-            try {
-                div.parentNode.removeChild(div);
-            } catch (err) {
-
-            }
-            panes.floatPane.appendChild(div);
-        } else {
-            // The panes have not changed, so no need to create or move the div.
         }
+
+        div.innerHTML = '';
+
+        // Add content right on
+        div.appendChild(this.__ELEM);
+        panes.floatPane.appendChild(div);
+
+        // Place content from with and height
+        this._height = this.__ELEM.offsetHeight;
+        this._width = this.__ELEM.offsetWidth;
+
+        div.style.width = this._width + "px";
+        div.style.height = this._height + "px";
+
+        var infobox_class = 'gmap_infobox';
+        div.setAttribute('class', infobox_class);
+
+        // div.style.display = 'none';
+        var position = this.opts.placement.split(' ');
+
+        switch (position[0]) {
+            case 'top':
+                this._offsetY =  -parseFloat(this.opts.offsetY);
+            break;
+            case 'over':
+                this._offsetY =  -parseFloat(this.opts.offsetY) - parseInt(this._height);
+            break;
+            case 'bottom':
+                this._offsetY = - parseFloat(this._height);
+            break;
+            case 'under':
+                this._offsetY =  0;
+            break;
+            case 'center':
+                this._offsetY =  -parseFloat(this.opts.offsetY)/2 - parseInt(this._height)/2;
+            break;
+        }
+        switch (position[1]) {
+            case 'right':
+                this._offsetX = (parseFloat(this.opts.offsetX)) - parseInt(this._width);
+            break;
+            case 'left':
+                this._offsetX = -(parseFloat(this.opts.offsetX));
+            break;
+            case 'center':
+                this._offsetX = - (parseInt(this._width)/2);
+            break;
+            case 'out-right':
+                this._offsetX = (parseFloat(this.opts.offsetX));;
+            break;
+            case 'out-left':
+                this._offsetX = -(parseFloat(this.opts.offsetX))-parseInt(this._width);
+            break;
+        }
+        this.panMap();
     };
+
+    BB.gmap.infobox.prototype.generateInfoboxContent = function() {
+        var elem = this.infoboxContent;
+        if (typeof elem == 'function') {
+            elem = elem(this.__MARKER.data());
+        }
+
+        if (typeof elem == 'number') {
+            elem = elem.toString();
+        }
+
+        if (typeof elem == 'string') {
+            // Does the infobox exists in the dom already?
+            var infobox = document.getElementById(elem);
+
+            // If not, create a DIV element with it.
+            if (!infobox) {
+                infobox = document.createElement('div');
+                infobox.style.position = 'absolute'; // Or this wont display corretly
+                infobox.innerHTML = elem;
+            }
+            elem = infobox;
+        }
+
+        // Let's get rid of jQuery for this one
+        if (elem instanceof jQuery) {
+            // Select DOMElement
+            elem = elem.get(0);
+        }
+
+        this.__ELEM = elem;
+        return this;
+    }
+
+    BB.gmap.infobox.prototype.refresh = function()
+    {
+        this.generateInfoboxContent();
+    }
 
     BB.gmap.infobox.prototype.panMap = function() {
         // if we go beyond map, pan map

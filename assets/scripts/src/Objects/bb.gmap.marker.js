@@ -136,7 +136,6 @@ BB.gmap.marker.prototype.set_image = function(src, dimensions) {
 
     img.onload = function() {
         this.data.set_icon(this);
-        this.data.display();
     };
 
     img.onerror = function() {
@@ -199,8 +198,8 @@ BB.gmap.marker.prototype.display = function() {
     }
 
     if (this.icon().src) {
-        var width = this.icon().width;
-        var height = this.icon().height;
+        var width = parseFloat(this.icon().width);
+        var height = parseFloat(this.icon().height);
         options.icon = new google.maps.MarkerImage(
             // image src
             this.icon().src,
@@ -212,7 +211,6 @@ BB.gmap.marker.prototype.display = function() {
             new google.maps.Point((width / 2), height),
             new google.maps.Size(width, height)
         );
-
     }
 
     if (typeof this.object() != 'undefined') {
@@ -357,6 +355,7 @@ BB.gmap.marker.prototype.onclick = function(event) {
             if (that.__INFOBOX.map) {
                 that.__INFOBOX.set_map(null);
             } else {
+                that.__INFOBOX.set_position(that.object().getPosition());
                 that.__INFOBOX.set_map(that.controller().map());
             }
             that.focus();
@@ -368,19 +367,19 @@ BB.gmap.marker.prototype.onclick = function(event) {
             BB.gmap.statics.infobox_loaded = true;
         }
 
-        if (typeof _data.infobox == 'function') {
-            _data.infobox = _data.infobox(that.data());
-        }
+        // if (typeof _data.infobox == 'function') {
+        //     _data.infobox = _data.infobox(that.data());
+        // }
 
-        if (typeof _data.infobox == 'string') {
-            var infobox = document.getElementById(_data.infobox);
-            if (!infobox) {
-                infobox = document.createElement('div');
-                infobox.style.position = 'absolute'; // Or this wont display corretly
-                infobox.innerHTML = _data.infobox;
-            }
-            _data.infobox = infobox;
-        }
+        // if (typeof _data.infobox == 'string') {
+        //     var infobox = document.getElementById(_data.infobox);
+        //     if (!infobox) {
+        //         infobox = document.createElement('div');
+        //         infobox.style.position = 'absolute'; // Or this wont display corretly
+        //         infobox.innerHTML = _data.infobox;
+        //     }
+        //     _data.infobox = infobox;
+        // }
 
         var infobox_options = {};
         if (_data.infobox_options) {
@@ -398,8 +397,8 @@ BB.gmap.marker.prototype.onclick = function(event) {
         }
 
         infobox_options.map = that.controller().map();
-        infobox_options.position = that.get_position().getAt(0).getAt(0);
-        that.__INFOBOX = new BB.gmap.infobox(_data.infobox, infobox_options);
+        infobox_options.position = that.get_position();
+        that.__INFOBOX = new BB.gmap.infobox(_data.infobox, infobox_options, that);
     }
 
     that.focus();
@@ -466,14 +465,37 @@ BB.gmap.marker.prototype.get_bounds = function() {
  *
  */
 BB.gmap.marker.prototype.get_position = function() {
-    var position = new google.maps.MVCArray();
-    var array = new google.maps.MVCArray();
-
     if (!this.object()) {
-        return false;
+        return ;
     }
+    return this.object().getPosition();
+};
 
-    position.push(this.object().getPosition());
-    array.push(position);
-    return array;
+BB.gmap.marker.prototype.set_position = function(position) {
+        if (!position) {
+            return this;
+        }
+
+        if (typeof position == 'string') {
+            position = position.split(',');
+        }
+
+        if (!(position instanceof google.maps.LatLng)) {
+            if (typeof position[0] == 'undefined' || typeof position[1] == 'undefined') {
+                return this;
+            }
+            position = new google.maps.LatLng(position[0], position[1]);
+        }
+
+
+        this.object().setPosition(position);
+        this.set_data({
+            coords: [position.lat(), position.lng()]
+        });
+
+        if (this.__INFOBOX) {
+            this.__INFOBOX.set_position(position);
+        }
+
+        return this;
 };
