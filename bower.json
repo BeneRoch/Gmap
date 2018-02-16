@@ -1,26 +1,23 @@
 {
-  "name": "bb-gmap",
-  "homepage": "https://github.com/beneroch/Gmap",
-  "description": "Helper classes to deal with Google Map API, control elements on the map",
-  "license": "MIT",
-  "main": "assets/scripts/dist/bb.gmap.js",
-  "keywords": [
-    "bene",
-    "bene-bundle",
-    "bb-gmap",
-    "bb_gmap",
-    "gmap"
-  ],
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "README.md",
-    "index.php",
-    "test",
-    "tests"
-  ],
-  "authors": [
-    "beneroch <roch.bene@gmail.com>"
-  ]
+    "name": "bb-gmap",
+    "authors": [
+        "Bene <roch.bene@gmail.com>"
+    ],
+    "description": "JavaScript library for working with the Google Maps API.",
+    "homepage": "https://github.com/beneroch/Gmap",
+    "license": "MIT",
+    "main": "assets/scripts/dist/bb.gmap.js",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests",
+        "index.html",
+        "canvas.html",
+    ],
+    "keywords": [
+        "beneroch",
+        "gmap"
+    ]
 }

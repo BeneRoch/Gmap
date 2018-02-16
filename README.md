@@ -1,4 +1,8 @@
-# Gmap
+Gmap
+----
+
+JavaScript library for working with the Google Maps API.
+
 - Description
 - Objects / Classes
     - BB.base
