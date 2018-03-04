@@ -490,12 +490,6 @@ BB.gmap.line.prototype.mouse_over = function(event) {
     if (typeof _data.onmouseover == 'function') {
         _data.onmouseover(that, event);
     }
-
-    var styles = that.get_styles();
-    // Use hover styles
-    if (typeof styles.hover == 'object') {
-        that.set_styles(styles.hover);
-    }
 };
 
 /**
@@ -505,21 +499,11 @@ BB.gmap.line.prototype.mouse_over = function(event) {
  */
 BB.gmap.line.prototype.mouse_out = function(event) {
     var that = this.bbobject;
-
     var _data = that.data();
 
     if (typeof _data.onmouseout == 'function') {
         _data.onmouseout(that, event);
     }
-
-    var focused = that.controller().focused();
-    if (focused == that) {
-        return false;
-    }
-    // Go back to original state
-    var styles = that.get_data('styles');
-
-    that.set_styles(that.get_data('styles'));
 };
 
 

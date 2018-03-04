@@ -287,7 +287,10 @@ function init_infoBox() {
         // if we go beyond map, pan map
 
         var map = this.map;
-        var bounds = map.getBounds();
+        var bounds;
+        if (map) {
+            bounds = map.getBounds();
+        }
         if (!bounds) return;
 
         // The position of the infowindow

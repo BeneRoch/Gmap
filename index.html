@@ -168,7 +168,6 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 					coords: [45.3712923, -73.9820994],
 					type : 'richmarker',
 					html: function(data) {
-						console.log(data);
 						return '<div style="background: red; height: 60px; width: 60px;">'+data.ident+' OOOOOH</div>'
 					},
 					selected_html: '<div style="background: red; height: 60px; width: 60px;">OOOOOH</div>',
@@ -265,7 +264,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 		map4.add_place_by_address('test3', '1870 iberville, montréal, qc', {
 			type : 'richmarker',
 			html: '<div style="background: red; height: 60px; width: 60px;">OOOOOH</div>',
-			selected_html: '<div style="background: red; height: 60px; width: 60px;">OOOOOH</div>',
+			selected_html: '<div style="background: green; height: 60px; width: 60px;">OOOOOH</div>',
 			infobox: $('<div style="background: blue;">test</div>')
 		});
 		map4.init().ready(function() {

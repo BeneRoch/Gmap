@@ -51,11 +51,6 @@ BB.gmap.controller = function(container, data) {
     // DOM Element where is applied the actual map
     this.__CONTAINER = container;
 
-    // Editable makes the controller listen for events
-    // such as click, mouseover, etc and dispatch that
-    // event to every children in 'places'
-    this.__EDITABLE = false;
-
     // all places are stucked there
     // this allows a quick research by ident
     this.__PLACES = {
@@ -510,7 +505,6 @@ BB.gmap.controller.prototype.get_place = function(ident) {
 BB.gmap.controller.prototype.remove_focus = function() {
     var focused = this.focused();
     if (focused) {
-
         if (typeof this.data('onblur') === 'function') {
             var func = this.data('onblur');
             func(focused, this);
@@ -531,10 +525,24 @@ BB.gmap.controller.prototype.remove_focus = function() {
  */
 BB.gmap.controller.prototype.set_focus = function(item) {
     // First, remove focus
-    this.remove_focus();
-
     // Set focus on new item
-    this.__FOCUSED_ITEM = item;
+    if (!this.data('multiple')) {
+        this.remove_focus();
+        this.__FOCUSED_ITEM = item;
+    }
+
+    if (this.data('multiple')) {
+        if (!this.__FOCUSED_ITEM) {
+            this.__FOCUSED_ITEM = {};
+        }
+
+        if (typeof this.__FOCUSED_ITEM[item.data('ident')] != 'undefined') {
+            this.remove_focus(this.__FOCUSED_ITEM[item.data('ident')]);
+            return this;
+        }
+
+        this.__FOCUSED_ITEM[item.data('ident')] = item;
+    }
 
     if (typeof this.data('onfocus') === 'function') {
         var func = this.data('onfocus');
@@ -752,7 +760,6 @@ BB.gmap.controller.prototype.map_click = function(event) {
 
     // Focused item on the map (if any)
     var focused = this.focused();
-
     if (!focused) {
         return this;
     }
@@ -764,10 +771,7 @@ BB.gmap.controller.prototype.map_click = function(event) {
         this.remove_focus();
     }
 
-
-
     return this;
-
 };
 
 

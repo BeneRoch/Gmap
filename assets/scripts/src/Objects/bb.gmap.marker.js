@@ -280,31 +280,31 @@ BB.gmap.marker.prototype.set_marker = function(marker) {
  *
  */
 BB.gmap.marker.prototype.listeners = function() {
-    // Scope
-    var that = this;
-
     // Marker
     var marker = this.object();
-
-    marker.bbmarker = this;
+    marker.bbobject = this;
 
     if (this.data('draggable')) {
-        google.maps.event.addListener(marker, 'dragend', that.dragend);
+        google.maps.event.addListener(marker, 'dragend', this.dragend);
     }
 
     // click listeners
     // No condition, which is different to the dragend option
     // We might always use the click event, I see no reason to make
     // it optional. Options will occur in the event handler.
-    google.maps.event.addListener(marker, 'click', that.onclick);
+    google.maps.event.addListener(this.object(), 'click', this.onclick);
+    google.maps.event.addListener(this.object(), 'mouseover', this.mouse_over);
+    google.maps.event.addListener(this.object(), 'mouseout', this.mouse_out);
 
 };
 
 BB.gmap.marker.prototype.clear_listeners = function() {
-    var marker = this.object();
-
-    google.maps.event.clearListeners(marker, 'dragend');
-    google.maps.event.clearListeners(marker, 'click');
+    google.maps.event.clearListeners(this.object(), 'mouseover');
+    google.maps.event.clearListeners(this.object(), 'mouseout');
+    google.maps.event.clearListeners(this.object(), 'click');
+    if (this.data('draggable')) {
+        google.maps.event.clearListeners(this.object(), 'dragend');
+    }
 
     return this;
 };
@@ -318,7 +318,7 @@ BB.gmap.marker.prototype.clear_listeners = function() {
  */
 BB.gmap.marker.prototype.dragend = function(event) {
     // Scope
-    var that = this.bbmarker;
+    var that = this.bbobject;
 
     var _data = that.data();
 
@@ -342,7 +342,7 @@ BB.gmap.marker.prototype.dragend = function(event) {
  */
 BB.gmap.marker.prototype.onclick = function(event) {
     // Scope
-    var that = this.bbmarker;
+    var that = this.bbobject;
     var _data = that.data();
 
     if (typeof _data.onclick == 'function') {
@@ -350,65 +350,44 @@ BB.gmap.marker.prototype.onclick = function(event) {
     } else if (typeof _data.onclick == 'string' && typeof window[_data.onclick] == 'function') {
         window[_data.onclick](that, event);
     }
-    if (_data.infobox) {
-        if (that.__INFOBOX) {
-            if (that.__INFOBOX.map) {
-                that.__INFOBOX.set_map(null);
-            } else {
-                that.__INFOBOX.set_position(that.object().getPosition());
-                that.__INFOBOX.set_map(that.controller().map());
-            }
-            that.focus();
-            return this;
-        }
-
-        if (!BB.gmap.statics.infobox_loaded) {
-            init_infoBox();
-            BB.gmap.statics.infobox_loaded = true;
-        }
-
-        // if (typeof _data.infobox == 'function') {
-        //     _data.infobox = _data.infobox(that.data());
-        // }
-
-        // if (typeof _data.infobox == 'string') {
-        //     var infobox = document.getElementById(_data.infobox);
-        //     if (!infobox) {
-        //         infobox = document.createElement('div');
-        //         infobox.style.position = 'absolute'; // Or this wont display corretly
-        //         infobox.innerHTML = _data.infobox;
-        //     }
-        //     _data.infobox = infobox;
-        // }
-
-        var infobox_options = {};
-        if (_data.infobox_options) {
-            infobox_options = _data.infobox_options;
-        }
-        
-
-        // Default placement
-        if (!infobox_options.offsetY) {
-            infobox_options.offsetY = that.icon().height;
-        }
-
-        if (!infobox_options.offsetX) {
-            infobox_options.offsetX = (that.icon().width / 2);
-        }
-
-        infobox_options.map = that.controller().map();
-        infobox_options.position = that.get_position();
-        that.__INFOBOX = new BB.gmap.infobox(_data.infobox, infobox_options, that);
-    }
 
     that.focus();
+};
 
+/**
+ * `this` is NOT a BB.gmap.line object
+ * @see this.listeners()
+ * @param event
+ */
+BB.gmap.marker.prototype.mouse_over = function(event) {
+    var that = this.bbobject;
+    var _data = that.data();
+
+    if (typeof _data.onmouseover == 'function') {
+        _data.onmouseover(that, event);
+    }
+};
+
+/**
+ * `this` is NOT a BB.gmap.line object
+ * @see this.listeners()
+ * @param event
+ */
+BB.gmap.marker.prototype.mouse_out = function(event) {
+    var that = this.bbobject;
+    var _data = that.data();
+
+    if (typeof _data.onmouseout == 'function') {
+        _data.onmouseout(that, event);
+    }
 };
 
 /**
  * marker-selected.png
  */
 BB.gmap.marker.prototype.focus = function() {
+    this.checkInfobox(true);
+
     // Scope
     var that = this;
 
@@ -425,10 +404,10 @@ BB.gmap.marker.prototype.focus = function() {
             this.set_image(_data.icon_selected);
         }
     }
-
 };
 
 BB.gmap.marker.prototype.blur = function() {
+    this.checkInfobox(false);
     // Mechanics calls this methods upon map reset
     // We wanna check if the place still exists in the ma data entry
     if (!this.controller().get_place(this.ident())) {
@@ -450,6 +429,47 @@ BB.gmap.marker.prototype.blur = function() {
         }
     }
 };
+
+BB.gmap.marker.prototype.checkInfobox = function(visible) {
+    var that = this;
+    var _data = this.data();
+
+    if (_data.infobox) {
+        if (that.__INFOBOX) {
+            if (that.__INFOBOX.map && !visible) {
+                that.__INFOBOX.set_map(null);
+            } else if (visible) {
+                that.__INFOBOX.set_position(that.object().getPosition());
+                that.__INFOBOX.set_map(that.controller().map());
+            }
+            return this;
+        }
+
+        if (!BB.gmap.statics.infobox_loaded) {
+            init_infoBox();
+            BB.gmap.statics.infobox_loaded = true;
+        }
+
+        var infobox_options = {};
+        if (_data.infobox_options) {
+            infobox_options = _data.infobox_options;
+        }
+        
+
+        // Default placement
+        if (!infobox_options.offsetY) {
+            infobox_options.offsetY = that.icon().height;
+        }
+
+        if (!infobox_options.offsetX) {
+            infobox_options.offsetX = (that.icon().width / 2);
+        }
+
+        infobox_options.map = that.controller().map();
+        infobox_options.position = that.get_position();
+        that.__INFOBOX = new BB.gmap.infobox(_data.infobox, infobox_options, that);
+    }
+}
 
 BB.gmap.marker.prototype.get_bounds = function() {
     // Scope

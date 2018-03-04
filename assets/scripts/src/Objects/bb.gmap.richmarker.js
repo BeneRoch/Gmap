@@ -138,7 +138,7 @@ BB.gmap.richmarker.prototype.listeners = function() {
     // Marker
     var marker = this.object();
 
-    marker.bbmarker = this;
+    marker.bbobject = this;
 
     if (this.data('draggable')) {
         google.maps.event.addListener(marker, 'dragend', that.dragend);
@@ -165,6 +165,7 @@ BB.gmap.richmarker.prototype.clear_listeners = function() {
  * marker-selected.png
  */
 BB.gmap.richmarker.prototype.focus = function() {
+    this.checkInfobox(true);
 
     if (this.controller().focused()) {
         if (this.controller().focused().ident() == this.ident()) {
@@ -172,13 +173,22 @@ BB.gmap.richmarker.prototype.focus = function() {
         }
     }
 
+    this.controller().set_focus(this);
+
     // Selected icon
     // Set selected state
-    this.controller().set_focus(this);
-    this.object().setHtml(this.data('selected_html'));
+    if (this.data('selected_html')) {
+        var selected_html = this.data('selected_html');
+        if (typeof selected_html === 'function') {
+            selected_html = selected_html(this.data());
+        }
+        this.object().setHtml(selected_html);
+    }
 };
 
 BB.gmap.richmarker.prototype.blur = function() {
+    this.checkInfobox(false);
+
     // Mechanics calls this methods upon map reset
     // We wanna check if the place still exists in the ma data entry
     if (!this.controller().get_place(this.ident())) {
@@ -187,7 +197,11 @@ BB.gmap.richmarker.prototype.blur = function() {
 
     // Selected icon
     // Unset selected state
-    this.object().setHtml(this.data('html'));
+    var html = this.data('html');
+    if (typeof html === 'function') {
+        html = html(this.data());
+    }
+    this.object().setHtml(html);
 };
 
 BB.gmap.richmarker.prototype.icon = function() {
@@ -231,17 +245,21 @@ customMarker = function(data) {
         };
 
         BB.gmap.customMarker.prototype.setHtml = function(html) {
+            this.html = html;
+
             var self = this;
             var div = this.div;
             if (!div) {
                 div = document.createElement('div');
                 div.style.position = 'absolute';
                 div.style.cursor = 'pointer';
+
                 google.maps.event.addDomListener(div, "click", function(event) {
                     event.stopPropagation();
                     event.preventDefault();
                     google.maps.event.trigger(self, "click");
                 });
+
                 var panes = this.getPanes();
                 panes.overlayImage.appendChild(div);
             }
@@ -258,6 +276,7 @@ customMarker = function(data) {
             }
 
             this.div = div;
+            
         }
 
         BB.gmap.customMarker.prototype.remove = function() {
