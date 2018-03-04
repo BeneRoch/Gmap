@@ -71,7 +71,7 @@ class Marker extends Object {
 
     /**
      * On click callback.
-     * @return {thisArg} Chainable.
+     * @return {this} Chainable.
      */
     click() {
         return this;
@@ -79,7 +79,7 @@ class Marker extends Object {
 
     /**
      * On mouse over callback.
-     * @return {thisArg} Chainable.
+     * @return {this} Chainable.
      */
     mouseover() {
         return this;
@@ -87,7 +87,7 @@ class Marker extends Object {
 
     /**
      * On mouse out callback.
-     * @return {thisArg} Chainable.
+     * @return {this} Chainable.
      */
     mouseout() {
         return this;
@@ -95,7 +95,7 @@ class Marker extends Object {
 
     /**
      * Show object on map.
-     * @return {thisArg} Chainable.
+     * @return {this} Chainable.
      */
     show() {
         this.googleObject().setMap(this.map);
@@ -104,7 +104,7 @@ class Marker extends Object {
 
     /**
      * Hide object from map.
-     * @return {thisArg} Chainable.
+     * @return {this} Chainable.
      */
     hide() {
         this.googleObject().setMap(null);
@@ -119,6 +119,10 @@ class Marker extends Object {
         this.destroy();
     }
 
+    /**
+     * Destroy module.
+     * @return {this} [description]
+     */
     destroy() {
         this.hide();
     }
