@@ -558,10 +558,15 @@ BB.gmap.line.prototype.focus = function() {
     if (this.__DELETED) {
         return false;
     }
+
+    if (this.controller().focused(this.data('ident'))) {
+        this.controller().set_focus(this);
+        return this;
+    }
+
     this.controller().set_focus(this);
 
     var styles = this.get_data('styles');
-
     if (typeof styles.focused == 'object') {
         this.set_styles(styles.focused);
     }
@@ -584,7 +589,6 @@ BB.gmap.line.prototype.blur = function() {
         return false;
     }
     this.set_styles(this.get_data('styles'));
-
     // No markers when not selected
     // this.hide_markers();
 

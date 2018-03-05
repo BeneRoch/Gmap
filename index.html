@@ -153,6 +153,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 
 		map2 = new BB.gmap.controller(document.getElementById('map2'), {
 			use_clusterer: false,
+			multiple: true,
 		   	map: {
 	  			center: {
 					x 	: 45.3712923,
@@ -165,7 +166,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 			},
 			places: {
 				rich: {
-					coords: [45.3712923, -73.9820994],
+					coords: [49.3712923, -76.9820994],
 					type : 'richmarker',
 					html: function(data) {
 						return '<div style="background: red; height: 60px; width: 60px;">'+data.ident+' OOOOOH</div>'
@@ -177,11 +178,12 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 					}
 				},
 				line : {
-					type : 'line',
+					type : 'polygon',
 					paths: [
 						[45.3712923, -73.9820994],
 						[41.291982, -67.821856],
-						[48.142599, -58.431]
+						[48.142599, -58.431],
+						[45.3712923, -73.9820994]
 					],
 					onmouseover: function(object, event) {
 

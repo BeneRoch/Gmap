@@ -502,8 +502,28 @@ BB.gmap.controller.prototype.get_place = function(ident) {
     return place;
 };
 
-BB.gmap.controller.prototype.remove_focus = function() {
-    var focused = this.focused();
+BB.gmap.controller.prototype.remove_focus = function(ident) {
+    var focused = this.focused(ident);
+
+    // if (this.data('multiple') && ident) {
+    //     this.__FOCUSED_ITEM[ident]
+    // }
+    
+    if (this.data('multiple') && !ident) {
+        for (var id in focused) {
+
+            if (typeof this.data('onblur') === 'function') {
+                var func = this.data('onblur');
+                func(focused[id], this);
+            }
+
+            focused[id].blur();
+            this.__FOCUSED_ITEM[id] = undefined;
+            delete this.__FOCUSED_ITEM[id];
+        }
+        return this;
+    }
+
     if (focused) {
         if (typeof this.data('onblur') === 'function') {
             var func = this.data('onblur');
@@ -511,7 +531,13 @@ BB.gmap.controller.prototype.remove_focus = function() {
         }
 
         focused.blur();
-        this.__FOCUSED_ITEM = undefined;
+
+        if (this.data('multiple')) {
+            this.__FOCUSED_ITEM[ident] = undefined;
+            delete this.__FOCUSED_ITEM[ident];
+        } else {
+            this.__FOCUSED_ITEM = undefined;
+        }
     }
 
 
@@ -537,7 +563,7 @@ BB.gmap.controller.prototype.set_focus = function(item) {
         }
 
         if (typeof this.__FOCUSED_ITEM[item.data('ident')] != 'undefined') {
-            this.remove_focus(this.__FOCUSED_ITEM[item.data('ident')]);
+            this.remove_focus(item.data('ident'));
             return this;
         }
 
@@ -555,7 +581,19 @@ BB.gmap.controller.prototype.set_focus = function(item) {
 /**
  * Retrieve focus Item, then change it.
  */
-BB.gmap.controller.prototype.focused = function() {
+BB.gmap.controller.prototype.focused = function(ident) {
+    if (this.data('multiple') && ident) {
+        if (typeof this.__FOCUSED_ITEM == 'undefined') {
+            return undefined;
+        }
+        if (typeof this.__FOCUSED_ITEM[ident] != 'undefined') {
+            return this.__FOCUSED_ITEM[ident];
+        }
+        return undefined;
+    } else if (ident) {
+        // Prevents error when non multiple.
+        return undefined;
+    }
     return this.__FOCUSED_ITEM;
 };
 
@@ -765,8 +803,12 @@ BB.gmap.controller.prototype.map_click = function(event) {
     }
 
     // Edit OR get out of focus
-    if (focused.data('editable')) {
-        focused.map_click(event);
+    if (!this.data('multiple')) {
+        if (focused.data('editable') && !this.data('multiple')) {
+            focused.map_click(event);
+        } else {
+            this.remove_focus();
+        }
     } else {
         this.remove_focus();
     }
