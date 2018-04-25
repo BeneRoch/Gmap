@@ -512,31 +512,32 @@ BB.gmap.controller.prototype.remove_focus = function(ident) {
     if (this.data('multiple') && !ident) {
         for (var id in focused) {
 
-            if (typeof this.data('onblur') === 'function') {
-                var func = this.data('onblur');
-                func(focused[id], this);
-            }
-
-            focused[id].blur();
+            var current = focused[id];
             this.__FOCUSED_ITEM[id] = undefined;
             delete this.__FOCUSED_ITEM[id];
+
+            current.blur();
+            if (typeof this.data('onblur') === 'function') {
+                var func = this.data('onblur');
+                func(current, this);
+            }
         }
         return this;
     }
 
     if (focused) {
-        if (typeof this.data('onblur') === 'function') {
-            var func = this.data('onblur');
-            func(focused, this);
-        }
-
-        focused.blur();
 
         if (this.data('multiple')) {
             this.__FOCUSED_ITEM[ident] = undefined;
             delete this.__FOCUSED_ITEM[ident];
         } else {
             this.__FOCUSED_ITEM = undefined;
+        }
+
+        focused.blur();
+        if (typeof this.data('onblur') === 'function') {
+            var func = this.data('onblur');
+            func(focused, this);
         }
     }
 

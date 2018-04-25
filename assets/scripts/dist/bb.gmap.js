@@ -849,31 +849,33 @@ BB.gmap.controller.prototype.remove_focus = function(ident) {
     if (this.data('multiple') && !ident) {
         for (var id in focused) {
 
-            if (typeof this.data('onblur') === 'function') {
-                var func = this.data('onblur');
-                func(focused[id], this);
-            }
-
-            focused[id].blur();
+            var current = focused[id];
             this.__FOCUSED_ITEM[id] = undefined;
             delete this.__FOCUSED_ITEM[id];
+
+            current.blur();
+            console.log(current.data());
+            if (typeof this.data('onblur') === 'function') {
+                var func = this.data('onblur');
+                func(current, this);
+            }
         }
         return this;
     }
 
     if (focused) {
-        if (typeof this.data('onblur') === 'function') {
-            var func = this.data('onblur');
-            func(focused, this);
-        }
-
-        focused.blur();
 
         if (this.data('multiple')) {
             this.__FOCUSED_ITEM[ident] = undefined;
             delete this.__FOCUSED_ITEM[ident];
         } else {
             this.__FOCUSED_ITEM = undefined;
+        }
+
+        focused.blur();
+        if (typeof this.data('onblur') === 'function') {
+            var func = this.data('onblur');
+            func(focused, this);
         }
     }
 
@@ -3337,7 +3339,7 @@ BB.gmap.line.prototype.clear_listeners = function() {
 
     // Chainable
     return this;
-}
+};
 
 /**
  * `this` is NOT a BB.gmap.line object
@@ -3350,6 +3352,11 @@ BB.gmap.line.prototype.mouse_over = function(event) {
 
     if (typeof _data.onmouseover == 'function') {
         _data.onmouseover(that, event);
+    }
+
+    var styles = that.get_data('styles');
+    if (typeof styles.hover == 'object') {
+        that.set_styles(styles.hover);
     }
 };
 
@@ -3364,6 +3371,16 @@ BB.gmap.line.prototype.mouse_out = function(event) {
 
     if (typeof _data.onmouseout == 'function') {
         _data.onmouseout(that, event);
+    }
+
+    var styles = that.get_data('styles');
+
+    if (that.controller().focused(that.data('ident'))) {
+        if (typeof styles.focused == 'object') {
+            that.set_styles(styles.focused);
+        }
+    } else {
+        that.set_styles(styles);
     }
 };
 

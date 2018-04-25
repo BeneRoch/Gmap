@@ -476,7 +476,7 @@ BB.gmap.line.prototype.clear_listeners = function() {
 
     // Chainable
     return this;
-}
+};
 
 /**
  * `this` is NOT a BB.gmap.line object
@@ -489,6 +489,11 @@ BB.gmap.line.prototype.mouse_over = function(event) {
 
     if (typeof _data.onmouseover == 'function') {
         _data.onmouseover(that, event);
+    }
+
+    var styles = that.get_data('styles');
+    if (typeof styles.hover == 'object') {
+        that.set_styles(styles.hover);
     }
 };
 
@@ -503,6 +508,16 @@ BB.gmap.line.prototype.mouse_out = function(event) {
 
     if (typeof _data.onmouseout == 'function') {
         _data.onmouseout(that, event);
+    }
+
+    var styles = that.get_data('styles');
+
+    if (that.controller().focused(that.data('ident'))) {
+        if (typeof styles.focused == 'object') {
+            that.set_styles(styles.focused);
+        }
+    } else {
+        that.set_styles(styles);
     }
 };
 
