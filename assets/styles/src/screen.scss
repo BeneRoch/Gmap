@@ -83,3 +83,17 @@ body, html {
 	border-radius: 10px;
 	padding: 10px;
 }
+
+
+.c-map_marker {
+	width: rem(60px);
+	height: rem(72px);
+	fill: blue;
+	transition: fill .3s cubic-bezier(.5,0,.3,1);
+	backface-visibility: hidden;
+	cursor: pointer;
+
+	&:hover, &.is-active {
+		fill: red;
+	}
+}

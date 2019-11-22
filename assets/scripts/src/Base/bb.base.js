@@ -98,13 +98,11 @@ BB.base.prototype.sanitize = function() {
  * @return {Object} data
  */
 BB.base.prototype._escape_data = function(data) {
-    var that = this;
-
-    if (typeof data == 'undefined') {
+    if (typeof data === 'undefined') {
         return '';
     }
 
-    if (typeof data == 'object' && data.length) {
+    if (typeof data === 'object' && data.length) {
         var i = 0;
         var count = data.length;
         for (; i < count; i++) {
@@ -112,13 +110,13 @@ BB.base.prototype._escape_data = function(data) {
         }
     }
 
-    if (typeof data == 'object') {
+    if (typeof data === 'object') {
         for (var k in data) {
             data[k] = this._escape_data(data[k]);
         }
     }
 
-    if (typeof data == 'string') {
+    if (typeof data === 'string') {
         return escape(data);
     }
 
@@ -134,19 +132,17 @@ BB.base.prototype._escape_data = function(data) {
  * @return {Object} data
  */
 BB.base.prototype._unescape_data = function(data) {
-    var that = this;
-
-    if (typeof data == 'undefined') {
+    if (typeof data === 'undefined') {
         return '';
     }
 
-    if (typeof data == 'object') {
+    if (typeof data === 'object') {
         for (var k in data) {
             data[k] = this._unescape_data(data[k]);
         }
     }
 
-    if (typeof data == 'string') {
+    if (typeof data === 'string') {
         return unescape(data);
     }
 
@@ -163,7 +159,7 @@ BB.base.prototype._unescape_data = function(data) {
  */
 BB.base.prototype.ident = function() {
     var _data = this.data();
-    if (typeof _data.ident != 'string') {
+    if (typeof _data.ident !== 'string') {
         this.error('Ident is not a String which is odd. ' + _data.ident);
         return '';
     }
@@ -180,7 +176,7 @@ BB.base.prototype.ident = function() {
  * @return this (chainable)
  */
 BB.base.prototype.set_ident = function(ident) {
-    if (typeof ident != 'string') {
+    if (typeof ident !== 'string') {
         ident = '' + ident;
         this.error('Ident must be a string. Automatically converted to : ' + ident);
     }
@@ -206,7 +202,7 @@ BB.base.prototype.error = function(error_msg) {
  * @return boolean
  */
 BB.base.prototype.is_empty_object = function(obj) {
-    if (typeof obj != 'object') {
+    if (typeof obj !== 'object') {
         this.error('Invalid argument, Object expected at BB.base.is_empty_object()');
         return true;
     }

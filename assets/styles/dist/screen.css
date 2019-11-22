@@ -58,3 +58,13 @@ body, html {
   background: #ddd;
   border-radius: 10px;
   padding: 10px; }
+
+.c-map_marker {
+  width: rem(60px);
+  height: rem(72px);
+  fill: blue;
+  transition: fill 0.3s cubic-bezier(0.5, 0, 0.3, 1);
+  backface-visibility: hidden;
+  cursor: pointer; }
+  .c-map_marker:hover, .c-map_marker.is-active {
+    fill: red; }

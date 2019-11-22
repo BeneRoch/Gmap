@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html style="height:100%;">
+<head>
+    <meta charset="utf-8">
+    <link href="assets/styles/dist/screen.css" rel="stylesheet" type="text/css">
+
+
+</head>
+<body style="height:100%;">
+<div class="grid">
+    <div class="row">
+        <div id="map2" class="full whole"></div>
+    </div>
+</div>
+
+</body>
+
+
+<script>
+    var map2;
+    function initialize() {
+        map2 = new BB.gmap.controller(document.getElementById('map2'), {
+            use_clusterer: false,
+            multiple:      false,
+            options:       {
+                center:     {
+                    lat: 45.798542550638,
+                    lng: -74.051208964193
+                },
+                zoom:       12,
+                mapType:    'roadmap',
+                coordsType: 'inpage', // array, json? (vs ul li)
+                map_mode:   'default'
+            },
+            places:        {
+                line:    {
+                    type:        'line',
+                    path:        [
+                        [45.80309566279571, -74.04297998226559],
+                        [45.80755317974558, -74.03246572292721],
+                        [45.8055488370618, -74.02783086574948],
+                        [45.801539935336706, -74.0299766329614],
+                        [45.79445931881104, -74.02819633483887],
+                        [45.792414120768164, -74.04572727579347],
+                        [45.80309566279571, -74.04297998226559]
+                    ],
+                    onmouseover: function (object, event) {
+
+                    },
+                    editable: true,
+                    styles:      {
+                        strokeColor:   '#99cc00',
+                        strokeOpacity: 0.8,
+                        strokeWeight:  3,
+                        hover:         {
+                            strokeColor:   '#000000',
+                            strokeOpacity: 0.8,
+                            strokeWeight:  3
+                        },
+                        focused:       {
+                            strokeColor: '#FFFFFF'
+                        }
+                    }
+                }
+            }
+        });
+        map2.init().ready(function () {
+            map2.fit_bounds()
+        });
+
+    }
+</script>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+
+<!-- <script src="assets/scripts/dist/gmap.min.js"></script> -->
+<script src="assets/scripts/dist/bb.gmap.js"></script>
+<script
+    src="http://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=fr&callback=initialize&key=AIzaSyBEHKKmTQT6Mi8bASxDtInXthSKLaBlBus"></script>
+</html>

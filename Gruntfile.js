@@ -105,6 +105,7 @@ module.exports = function(grunt) {
         'watch'
     ]);
     grunt.registerTask('build', [
+        'sass',
         'concat',
         'uglify'
     ]);
