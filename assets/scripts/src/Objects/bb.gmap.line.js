@@ -12,27 +12,11 @@ var BB = BB || {};
 BB.gmap = BB.gmap || {};
 
 /**
- * #Line object class
- * Accepts all datas at first
- * Needs a google.maps.Polyline() object ( data[ 'line' ] ) in order
- * be functionnal with all methods
+ * Line object class
  *
- * ##Options ( data )
- *
- * - type ( line // polygon )
- *
- * - styles
- * 	- strokeColor
- * 	- strokeOpacity
- * 	- strokeWeight
- * 	- fillColor
- * 	- fillOpacity
- *
- * - editable (makes map drawable)
- *
- * ##Methods
- *
- *
+ * @param data
+ * @param controller
+ * @returns {BB.gmap}
  */
 BB.gmap.line = function(data, controller) {
 
@@ -106,34 +90,6 @@ BB.gmap.line.prototype.set_path = function(path)
     this.object().setPath(path);
 
     return this;
-};
-
-/**
- * Allows to defines an array of coords [ [lat, lng], [lat, lng] ] as
- * a valid path for the line.
- * Transforms the said array into [ { lat: lat, lng: lng }, { lat: lat, lng: lng } ]
- *
- * @param arr
- * @returns {*}
- */
-BB.gmap.line.prototype.convert_recursive_array_to_lat_lng = function(arr)
-{
-    for (var k in arr) {
-        if (typeof arr[k] !== 'object') {
-            continue;
-        }
-
-        if (typeof arr[k][0] === 'object') {
-            arr[k] = this.convert_recursive_array_to_lat_lng(arr[k]);
-            continue;
-        }
-
-        if (arr[k].length === 2) {
-            arr[k] = { lat: parseFloat(arr[k][0]), lng: parseFloat(arr[k][1]) };
-        }
-    }
-
-    return arr;
 };
 
 /**
@@ -301,9 +257,7 @@ BB.gmap.line.prototype.mouse_out = function(event) {
     }
 
     var styles = that.get_data('styles');
-console.log(that.controller().focused());
-console.log(that.controller().focused(that.data('ident')));
-console.log(that.data('ident'));
+
     if (that.controller().focused(that.data('ident'))) {
         if (typeof styles.focused === 'object') {
             that.set_styles(styles.focused);
@@ -366,23 +320,15 @@ BB.gmap.line.prototype.focus = function() {
         return false;
     }
 
-    if (this.controller().focused(this.data('ident'))) {
-        this.controller().set_focus(this);
-        return this;
+    if (!this.controller().focused(this.data('ident'))) {
+        var styles = this.get_data('styles');
+        if (typeof styles.focused === 'object') {
+            this.set_styles(styles.focused);
+        }
+
     }
 
     this.controller().set_focus(this);
-
-    var styles = this.get_data('styles');
-    if (typeof styles.focused == 'object') {
-        this.set_styles(styles.focused);
-    }
-
-    // Markers when selected AND editable
-    if (this.data('editable')) {
-        this.show_markers();
-    }
-
     return this;
 };
 

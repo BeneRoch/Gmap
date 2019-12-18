@@ -125,6 +125,7 @@ BB.gmap.controller.prototype.place_loaded = function (obj) {
     obj.set_data({
         loaded: true
     });
+
     if (this.check_loaded_places() && this.data('tiles_loaded')) {
         this._ready();
     }
@@ -228,7 +229,7 @@ BB.gmap.controller.prototype.init = function () {
     }
 
     // Add listeners (map click)
-    // this.listeners();
+    this.listeners();
 
     return this;
 };
@@ -560,6 +561,10 @@ BB.gmap.controller.prototype.set_focus = function (item) {
  * Retrieve focus Item, then change it.
  */
 BB.gmap.controller.prototype.focused = function (ident) {
+    if (!this.__FOCUSED_ITEM) {
+        return undefined;
+    }
+
     if (this.data('multiple') && ident) {
         if (typeof this.__FOCUSED_ITEM === 'undefined') {
             return undefined;
@@ -569,6 +574,10 @@ BB.gmap.controller.prototype.focused = function (ident) {
         }
         return undefined;
     } else if (ident) {
+
+        if (this.__FOCUSED_ITEM.data('ident') === ident) {
+            return this.__FOCUSED_ITEM;
+        }
         // Prevents error when non multiple.
         return undefined;
     }
@@ -655,10 +664,10 @@ BB.gmap.controller.prototype.create_new = function (type, ident) {
         ident = 'new_object';
     }
 
-    // if (this.get_place( ident )) {
+    if (this.get_place( ident )) {
     // Cannot create with existing ident
-    //     return false;
-    // }
+        return false;
+    }
 
     var styles = this.default_styles();
 
@@ -683,8 +692,8 @@ BB.gmap.controller.prototype.create_new = function (type, ident) {
                 editable: true,
                 styles:   styles
             };
-            var line = new BB.gmap.line(opts, that);
 
+            var line = new BB.gmap.line(opts, that);
 
             that.set_place(ident, line);
             that.set_focus(line);
@@ -756,16 +765,9 @@ BB.gmap.controller.prototype.map_click = function (event) {
         return this;
     }
 
-    // Edit OR get out of focus
-    if (!this.data('multiple')) {
-        if (focused.data('editable')) {
-            focused.map_click(event);
-        } else {
-            this.remove_focus();
-        }
-    } else {
-        this.remove_focus();
-    }
+    // Dispatch event and remove focus
+    focused.map_click(event);
+    this.remove_focus();
 
     return this;
 };

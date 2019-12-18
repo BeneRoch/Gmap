@@ -276,7 +276,6 @@ function init_infoBox() {
      */
     BB.gmap.infobox.prototype.refresh = function()
     {
-        console.log('REFRESHING');
         this.generateInfoboxContent();
     };
 }

@@ -79,6 +79,35 @@ BB.gmap.object.prototype.set_map = function (map) {
 
 
 /**
+ * Allows to defines an array of coords [ [lat, lng], [lat, lng] ] as
+ * a valid path for the line.
+ * Transforms the said array into [ { lat: lat, lng: lng }, { lat: lat, lng: lng } ]
+ *
+ * @param arr
+ * @returns {*}
+ */
+BB.gmap.object.prototype.convert_recursive_array_to_lat_lng = function(arr)
+{
+    // Convert point to lat/lng
+    if (arr.length === 2) {
+        if (typeof arr[0] !== 'object' && typeof arr[1] !== 'object') {
+            return { lat: parseFloat(arr[0]), lng: parseFloat(arr[1]) };
+        }
+    }
+
+    // Convert path to lat/lng
+    for (var k in arr) {
+        if (typeof arr[k] !== 'object') {
+            continue;
+        }
+
+        arr[k] = this.convert_recursive_array_to_lat_lng(arr[k]);
+    }
+
+    return arr;
+};
+
+/**
  * Default
  *
  * @param event

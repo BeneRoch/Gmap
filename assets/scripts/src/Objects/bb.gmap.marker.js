@@ -33,8 +33,9 @@ BB.gmap.marker = function(data, controller) {
     // The controller and object are set in the BB.gmap.object Class
     BB.gmap.object.call(this, data, controller);
 
-    this.__MEDIA = undefined;
-    this.__ICON = undefined;
+    this._image = undefined;
+    this._ready = false;
+
     // Status vars
     this._image_loaded = false;
     this._marker_loaded = false;
@@ -63,65 +64,37 @@ BB.gmap.marker = function(data, controller) {
 BB.gmap.marker.prototype = Object.create(BB.gmap.object.prototype);
 
 /**
+ * Create gmap object
+ *
+ * @returns {google.maps.Polygon}
+ */
+BB.gmap.marker.prototype.create_object = function()
+{
+    return new google.maps.Marker(this._options);
+};
+
+/**
+ *
+ * @param options
+ * @returns {*}
+ */
+BB.gmap.marker.prototype.parse_options = function(options)
+{
+    delete options.type;
+    options.position = this.convert_recursive_array_to_lat_lng(options.position);
+    return options;
+};
+
+/**
  *
  * @returns {BB.gmap.marker}
  */
 BB.gmap.marker.prototype.init = function() {
-    var _data = this.data();
+    console.log(this.object());
 
-    if (typeof _data.icon === 'string') {
-        // No display called afterward
-        // @see set_image() -> display() called after the image load.
-        this.set_image(_data.icon);
-    } else if (typeof _data.icon === 'object') {
-        // We might have a path object (SVG)
-        this.set_icon(_data.icon);
-    } else {
-        // No image load, no need to wait.
-        this.display();
-    }
+    // Process image before showing.
+    this.show();
 
-    return this;
-};
-
-/**
- *
- */
-BB.gmap.marker.prototype.icon = function() {
-    if (!this.__ICON) {
-        return new Image();
-    }
-    return this.__ICON;
-};
-
-/**
- * Sets the icon for the marker
- * Each marker can have a different icon
- * @return this (chainable)
- */
-BB.gmap.marker.prototype.set_icon = function(icon) {
-    if (typeof icon !== 'object') {
-        this.error('Invalid icon at BB.gmap.marker.prototype.set_icon( ' + icon + ' )');
-        return this;
-    }
-
-    // If we have a path, continue
-    // If its not an image and path is undefined, this means
-    // we have an object with src, width and height
-    if (!(icon instanceof Image) && (typeof icon.path === 'undefined')) {
-        var dimensions;
-        if (icon.width && icon.height) {
-            dimensions = {
-                width: icon.width,
-                height: icon.height
-            };
-        }
-        this.set_image(icon.src, dimensions);
-        return this;
-    }
-
-    this.__ICON = icon;
-    this.display();
     return this;
 };
 
@@ -131,28 +104,59 @@ BB.gmap.marker.prototype.set_icon = function(icon) {
  *
  * @return this (chainable)
  */
-BB.gmap.marker.prototype.set_image = function(src, dimensions) {
+
+/**
+ * Allowed:
+ * https://path.to/image.jpg
+ * {
+ *     src: https://path.to/image.jpg
+ *     width: 42,
+ *     height: 42
+ * }
+ *
+ * @param src
+ * @returns {BB.gmap.marker}
+ */
+BB.gmap.marker.prototype.set_image = function(src, success, error) {
+
+    if (typeof src === 'string') {
+        src = { src: src };
+    }
+
+    if (typeof src !== 'object') {
+        // Error
+        return this;
+    }
+
+
     var img = new Image();
 
     img.data = this;
     img.onload = function() {
-        this.data.set_icon(this);
+        // Done
+        if (typeof success === 'function') {
+            success();
+        }
     };
 
     img.onerror = function() {
-        // Icon didn't work, treat it as if there's just no icon
-        this.data.set_data({
-            'icon': undefined
-        });
-        this.data.display();
+        // Failed
+        if (typeof error === 'function') {
+            error();
+        }
     };
-    img.src = src;
 
-    // Apply dimensions to img when defined
-    if (dimensions) {
-        img.height = dimensions.height;
-        img.width = dimensions.width;
+    img.src = src.src;
+
+    if (typeof src.width !== 'undefined') {
+        img.width = src.width;
     }
+
+    if (typeof src.height !== 'undefined') {
+        img.height = src.height;
+    }
+
+    this._image = img;
 
     return this;
 };
@@ -163,19 +167,6 @@ BB.gmap.marker.prototype.set_image = function(src, dimensions) {
  * @returns {*}
  */
 BB.gmap.marker.prototype.display = function() {
-    var _data = this.data();
-
-    if (typeof _data.coords !== 'object') {
-        this.error('Requires coordinates [lat, lng] at BB.gmap.marker.display()');
-        return false;
-    }
-    var options = {
-        map: this.controller().map(),
-        position: new google.maps.LatLng(_data.coords[0], _data.coords[1])
-    };
-
-    options = this.extend(options, _data);
-
 
     var height, width;
 

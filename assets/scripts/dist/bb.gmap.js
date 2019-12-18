@@ -458,6 +458,7 @@ BB.gmap.controller.prototype.place_loaded = function (obj) {
     obj.set_data({
         loaded: true
     });
+
     if (this.check_loaded_places() && this.data('tiles_loaded')) {
         this._ready();
     }
@@ -561,7 +562,7 @@ BB.gmap.controller.prototype.init = function () {
     }
 
     // Add listeners (map click)
-    // this.listeners();
+    this.listeners();
 
     return this;
 };
@@ -893,6 +894,10 @@ BB.gmap.controller.prototype.set_focus = function (item) {
  * Retrieve focus Item, then change it.
  */
 BB.gmap.controller.prototype.focused = function (ident) {
+    if (!this.__FOCUSED_ITEM) {
+        return undefined;
+    }
+
     if (this.data('multiple') && ident) {
         if (typeof this.__FOCUSED_ITEM === 'undefined') {
             return undefined;
@@ -902,6 +907,10 @@ BB.gmap.controller.prototype.focused = function (ident) {
         }
         return undefined;
     } else if (ident) {
+
+        if (this.__FOCUSED_ITEM.data('ident') === ident) {
+            return this.__FOCUSED_ITEM;
+        }
         // Prevents error when non multiple.
         return undefined;
     }
@@ -988,10 +997,10 @@ BB.gmap.controller.prototype.create_new = function (type, ident) {
         ident = 'new_object';
     }
 
-    // if (this.get_place( ident )) {
+    if (this.get_place( ident )) {
     // Cannot create with existing ident
-    //     return false;
-    // }
+        return false;
+    }
 
     var styles = this.default_styles();
 
@@ -1016,8 +1025,8 @@ BB.gmap.controller.prototype.create_new = function (type, ident) {
                 editable: true,
                 styles:   styles
             };
-            var line = new BB.gmap.line(opts, that);
 
+            var line = new BB.gmap.line(opts, that);
 
             that.set_place(ident, line);
             that.set_focus(line);
@@ -1089,16 +1098,9 @@ BB.gmap.controller.prototype.map_click = function (event) {
         return this;
     }
 
-    // Edit OR get out of focus
-    if (!this.data('multiple')) {
-        if (focused.data('editable')) {
-            focused.map_click(event);
-        } else {
-            this.remove_focus();
-        }
-    } else {
-        this.remove_focus();
-    }
+    // Dispatch event and remove focus
+    focused.map_click(event);
+    this.remove_focus();
 
     return this;
 };
@@ -1738,7 +1740,6 @@ function init_infoBox() {
      */
     BB.gmap.infobox.prototype.refresh = function()
     {
-        console.log('REFRESHING');
         this.generateInfoboxContent();
     };
 }
@@ -1822,6 +1823,35 @@ BB.gmap.object.prototype.set_map = function (map) {
     return this;
 };
 
+
+/**
+ * Allows to defines an array of coords [ [lat, lng], [lat, lng] ] as
+ * a valid path for the line.
+ * Transforms the said array into [ { lat: lat, lng: lng }, { lat: lat, lng: lng } ]
+ *
+ * @param arr
+ * @returns {*}
+ */
+BB.gmap.object.prototype.convert_recursive_array_to_lat_lng = function(arr)
+{
+    // Convert point to lat/lng
+    if (arr.length === 2) {
+        if (typeof arr[0] !== 'object' && typeof arr[1] !== 'object') {
+            return { lat: parseFloat(arr[0]), lng: parseFloat(arr[1]) };
+        }
+    }
+
+    // Convert path to lat/lng
+    for (var k in arr) {
+        if (typeof arr[k] !== 'object') {
+            continue;
+        }
+
+        arr[k] = this.convert_recursive_array_to_lat_lng(arr[k]);
+    }
+
+    return arr;
+};
 
 /**
  * Default
@@ -1961,8 +1991,9 @@ BB.gmap.marker = function(data, controller) {
     // The controller and object are set in the BB.gmap.object Class
     BB.gmap.object.call(this, data, controller);
 
-    this.__MEDIA = undefined;
-    this.__ICON = undefined;
+    this._image = undefined;
+    this._ready = false;
+
     // Status vars
     this._image_loaded = false;
     this._marker_loaded = false;
@@ -1991,65 +2022,37 @@ BB.gmap.marker = function(data, controller) {
 BB.gmap.marker.prototype = Object.create(BB.gmap.object.prototype);
 
 /**
+ * Create gmap object
+ *
+ * @returns {google.maps.Polygon}
+ */
+BB.gmap.marker.prototype.create_object = function()
+{
+    return new google.maps.Marker(this._options);
+};
+
+/**
+ *
+ * @param options
+ * @returns {*}
+ */
+BB.gmap.marker.prototype.parse_options = function(options)
+{
+    delete options.type;
+    options.position = this.convert_recursive_array_to_lat_lng(options.position);
+    return options;
+};
+
+/**
  *
  * @returns {BB.gmap.marker}
  */
 BB.gmap.marker.prototype.init = function() {
-    var _data = this.data();
+    console.log(this.object());
 
-    if (typeof _data.icon === 'string') {
-        // No display called afterward
-        // @see set_image() -> display() called after the image load.
-        this.set_image(_data.icon);
-    } else if (typeof _data.icon === 'object') {
-        // We might have a path object (SVG)
-        this.set_icon(_data.icon);
-    } else {
-        // No image load, no need to wait.
-        this.display();
-    }
+    // Process image before showing.
+    this.show();
 
-    return this;
-};
-
-/**
- *
- */
-BB.gmap.marker.prototype.icon = function() {
-    if (!this.__ICON) {
-        return new Image();
-    }
-    return this.__ICON;
-};
-
-/**
- * Sets the icon for the marker
- * Each marker can have a different icon
- * @return this (chainable)
- */
-BB.gmap.marker.prototype.set_icon = function(icon) {
-    if (typeof icon !== 'object') {
-        this.error('Invalid icon at BB.gmap.marker.prototype.set_icon( ' + icon + ' )');
-        return this;
-    }
-
-    // If we have a path, continue
-    // If its not an image and path is undefined, this means
-    // we have an object with src, width and height
-    if (!(icon instanceof Image) && (typeof icon.path === 'undefined')) {
-        var dimensions;
-        if (icon.width && icon.height) {
-            dimensions = {
-                width: icon.width,
-                height: icon.height
-            };
-        }
-        this.set_image(icon.src, dimensions);
-        return this;
-    }
-
-    this.__ICON = icon;
-    this.display();
     return this;
 };
 
@@ -2059,28 +2062,59 @@ BB.gmap.marker.prototype.set_icon = function(icon) {
  *
  * @return this (chainable)
  */
-BB.gmap.marker.prototype.set_image = function(src, dimensions) {
+
+/**
+ * Allowed:
+ * https://path.to/image.jpg
+ * {
+ *     src: https://path.to/image.jpg
+ *     width: 42,
+ *     height: 42
+ * }
+ *
+ * @param src
+ * @returns {BB.gmap.marker}
+ */
+BB.gmap.marker.prototype.set_image = function(src, success, error) {
+
+    if (typeof src === 'string') {
+        src = { src: src };
+    }
+
+    if (typeof src !== 'object') {
+        // Error
+        return this;
+    }
+
+
     var img = new Image();
 
     img.data = this;
     img.onload = function() {
-        this.data.set_icon(this);
+        // Done
+        if (typeof success === 'function') {
+            success();
+        }
     };
 
     img.onerror = function() {
-        // Icon didn't work, treat it as if there's just no icon
-        this.data.set_data({
-            'icon': undefined
-        });
-        this.data.display();
+        // Failed
+        if (typeof error === 'function') {
+            error();
+        }
     };
-    img.src = src;
 
-    // Apply dimensions to img when defined
-    if (dimensions) {
-        img.height = dimensions.height;
-        img.width = dimensions.width;
+    img.src = src.src;
+
+    if (typeof src.width !== 'undefined') {
+        img.width = src.width;
     }
+
+    if (typeof src.height !== 'undefined') {
+        img.height = src.height;
+    }
+
+    this._image = img;
 
     return this;
 };
@@ -2091,19 +2125,6 @@ BB.gmap.marker.prototype.set_image = function(src, dimensions) {
  * @returns {*}
  */
 BB.gmap.marker.prototype.display = function() {
-    var _data = this.data();
-
-    if (typeof _data.coords !== 'object') {
-        this.error('Requires coordinates [lat, lng] at BB.gmap.marker.display()');
-        return false;
-    }
-    var options = {
-        map: this.controller().map(),
-        position: new google.maps.LatLng(_data.coords[0], _data.coords[1])
-    };
-
-    options = this.extend(options, _data);
-
 
     var height, width;
 
@@ -2805,27 +2826,11 @@ var BB = BB || {};
 BB.gmap = BB.gmap || {};
 
 /**
- * #Line object class
- * Accepts all datas at first
- * Needs a google.maps.Polyline() object ( data[ 'line' ] ) in order
- * be functionnal with all methods
+ * Line object class
  *
- * ##Options ( data )
- *
- * - type ( line // polygon )
- *
- * - styles
- * 	- strokeColor
- * 	- strokeOpacity
- * 	- strokeWeight
- * 	- fillColor
- * 	- fillOpacity
- *
- * - editable (makes map drawable)
- *
- * ##Methods
- *
- *
+ * @param data
+ * @param controller
+ * @returns {BB.gmap}
  */
 BB.gmap.line = function(data, controller) {
 
@@ -2899,34 +2904,6 @@ BB.gmap.line.prototype.set_path = function(path)
     this.object().setPath(path);
 
     return this;
-};
-
-/**
- * Allows to defines an array of coords [ [lat, lng], [lat, lng] ] as
- * a valid path for the line.
- * Transforms the said array into [ { lat: lat, lng: lng }, { lat: lat, lng: lng } ]
- *
- * @param arr
- * @returns {*}
- */
-BB.gmap.line.prototype.convert_recursive_array_to_lat_lng = function(arr)
-{
-    for (var k in arr) {
-        if (typeof arr[k] !== 'object') {
-            continue;
-        }
-
-        if (typeof arr[k][0] === 'object') {
-            arr[k] = this.convert_recursive_array_to_lat_lng(arr[k]);
-            continue;
-        }
-
-        if (arr[k].length === 2) {
-            arr[k] = { lat: parseFloat(arr[k][0]), lng: parseFloat(arr[k][1]) };
-        }
-    }
-
-    return arr;
 };
 
 /**
@@ -3094,9 +3071,7 @@ BB.gmap.line.prototype.mouse_out = function(event) {
     }
 
     var styles = that.get_data('styles');
-console.log(that.controller().focused());
-console.log(that.controller().focused(that.data('ident')));
-console.log(that.data('ident'));
+
     if (that.controller().focused(that.data('ident'))) {
         if (typeof styles.focused === 'object') {
             that.set_styles(styles.focused);
@@ -3159,23 +3134,15 @@ BB.gmap.line.prototype.focus = function() {
         return false;
     }
 
-    if (this.controller().focused(this.data('ident'))) {
-        this.controller().set_focus(this);
-        return this;
+    if (!this.controller().focused(this.data('ident'))) {
+        var styles = this.get_data('styles');
+        if (typeof styles.focused === 'object') {
+            this.set_styles(styles.focused);
+        }
+
     }
 
     this.controller().set_focus(this);
-
-    var styles = this.get_data('styles');
-    if (typeof styles.focused == 'object') {
-        this.set_styles(styles.focused);
-    }
-
-    // Markers when selected AND editable
-    if (this.data('editable')) {
-        this.show_markers();
-    }
-
     return this;
 };
 
@@ -3290,22 +3257,14 @@ var BB = BB || {};
 
 BB.gmap = BB.gmap || {};
 
-/**
- * #Marker object class
- * Accepts all datas at first
- * Needs a google.maps.Marker() object ( data[ 'polygon' ] ) in order
- * be functionnal with all methods
- *
- * ##Options ( options {} )
- * - `icon`:
- *    - image `url`
- *
- *
- * ##Methods
- *
- *
- */
 
+/**
+ * Class polygon
+ *
+ * @param data
+ * @param controller
+ * @returns {BB.gmap}
+ */
 BB.gmap.polygon = function (data, controller) {
     // Call the supra class constructor with the arguments
     // The controller and object are set in the BB.gmap.object Class
@@ -3321,35 +3280,32 @@ BB.gmap.polygon = function (data, controller) {
 BB.gmap.polygon.prototype = Object.create(BB.gmap.line.prototype);
 
 /**
+ * Create gmap object
  *
+ * @returns {google.maps.Polygon}
  */
-BB.gmap.polygon.prototype.init = function() {
-    var _data = this.data();
+BB.gmap.polygon.prototype.create_object = function()
+{
+    return new google.maps.Polygon(this._options);
+};
 
-    // Set styles
-    if (typeof _data.styles !== 'object') {
-        this.set_data({
-            'styles': this.controller().data('default_styles')
-        });
+/**
+ *
+ * @param options
+ * @returns {*}
+ */
+BB.gmap.polygon.prototype.parse_options = function(options)
+{
+    delete options.type;
+    options.paths = this.convert_recursive_array_to_lat_lng(options.paths);
+
+
+    if (typeof options.styles === 'undefined') {
+        options = Object.assign(options, this.controller().default_styles());
+    } else {
+        options = Object.assign(options, options.styles);
     }
-    this.add_styles(_data.styles);
-
-    // Default = Empty array
-    // Makes it possible to DRAW a new line or polygon
-    this.set_paths(this.data('paths'));
-
-    if (this.get_paths() && this.get_styles()) {
-        this.display();
-    }
-
-    // Allow editable from options
-    if (_data.editable) {
-        this.set_editable(_data.editable);
-    }
-
-    // this.listeners();
-    this.controller().place_loaded(this);
-    return this;
+    return options;
 };
 
 /**
@@ -3368,46 +3324,13 @@ BB.gmap.polygon.prototype.get_paths = function()
 BB.gmap.polygon.prototype.set_paths = function(paths)
 {
     this.__PATHS = this.convert_recursive_array_to_lat_lng(paths);
-    if (this.object()) {
-        this.object().setPaths(this.__PATHS);
-    }
+    this.object().setPaths(this.__PATHS);
 };
-
 
 /**
- * Only difference
+ *
+ * @returns {*}
  */
-BB.gmap.polygon.prototype.display = function () {
-
-    var styles = this.get_styles();
-    if (typeof styles === 'undefined') {
-        this.error('Undefined styles at BB.gmap.polygon.display : ' + styles);
-    }
-
-    // Setting paths
-    var paths = this.get_paths();
-    if (typeof paths === 'undefined') {
-        this.error('Undefined paths at BB.gmap.polygon.display : ' + paths);
-    }
-styles.editable = true;
-styles.draggable = true;
-
-    if (typeof this.object() !== 'undefined') {
-        this.object().setOptions(styles);
-    } else {
-        var polygon = new google.maps.Polygon(styles);
-        this.set_object(polygon);
-    }
-
-    this.object().setPaths(paths);
-
-    this.set_map(this.controller().map());
-
-    // this.listeners();
-
-    return this;
-};
-
 BB.gmap.polygon.prototype.get_position = function () {
     return this.object().getPaths();
 };
