@@ -713,10 +713,18 @@ BB.gmap.controller.prototype.add_place = function (ident, data) {
             break;
 
         case 'line':
+            var defaultStyles = this.default_styles();
+            if (typeof data.styles === 'undefined') {
+                data.styles = defaultStyles;
+            }
             this.set_place(ident, new BB.gmap.line(data, this));
             break;
 
         case 'polygon':
+            var defaultStyles = this.default_styles();
+            if (typeof data.styles === 'undefined') {
+                data.styles = defaultStyles;
+            }
             this.set_place(ident, new BB.gmap.polygon(data, this));
             break;
     }
