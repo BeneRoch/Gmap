@@ -774,7 +774,16 @@ BB.gmap.controller.prototype.map_click = function (event) {
     }
 
     // Dispatch event and remove focus
-    focused.map_click(event);
+    if (focused instanceof BB.gmap.object) {
+        focused.map_click(event);
+    } else {
+        for (var k in focused) {
+            if (focused[k] instanceof BB.gmap.object) {
+                focused[k].map_click(event);
+            }
+        }
+    }
+
     this.remove_focus();
 
     return this;
