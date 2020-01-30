@@ -83,12 +83,11 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 			places :{
 				test22 : {
 					type : 'marker',
-					coords : [ 45.577997,-73.76850009999998 ],
+					position : [ 45.577997,-73.76850009999998 ],
 					infobox: '<div style="background: blue;">test</div>',
 					infobox_options: {
 						placement: 'over center'
-					},
-					draggable: true
+					}
 				},
 				zone1 : {
 				  	type: 'polygon',
@@ -103,47 +102,46 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 				}
 			}
 		})
-		map.add_place_by_address('test3', '1870 iberville, montréal, qc', {
-			type : 'marker',
-			icon : {
-				src : 'assets/images/marker.png'
-			},
-			infobox: '<div style="background: blue;">test</div>',
-			infobox_options: {
-				placement: 'over left'
-			}
-		});
-		map.add_place_by_address('test5', '1749 iberville, montréal, qc', {
-			type : 'marker',
-			icon : {
-				src : 'assets/images/marker.png'
-			},
-			infobox: '<div style="background: blue;">test</div>',
-			infobox_options: {
-				placement: 'over right'
-			}
-		});
-		map.add_place_by_address('test91', '2055 parthenais, montréal, qc', {
-			type : 'marker',
-			icon : {
-				src : 'assets/images/marker.png'
-			},
-			// infobox: '<div style="background: blue;">test</div>',
-			infobox: function(data) {
-				return Math.random();
-				return data.ident;
-			},
-			infobox_options: {
-				placement: 'under center'
-			}
-		});
+		// map.add_place_by_address('test3', '1870 iberville, montréal, qc', {
+		// 	type : 'marker',
+		// 	icon : {
+		// 		src : 'assets/images/marker.png'
+		// 	},
+		// 	infobox: '<div style="background: blue;">test</div>',
+		// 	infobox_options: {
+		// 		placement: 'over left'
+		// 	}
+		// });
+		// map.add_place_by_address('test5', '1749 iberville, montréal, qc', {
+		// 	type : 'marker',
+		// 	icon : {
+		// 		src : 'assets/images/marker.png'
+		// 	},
+		// 	infobox: '<div style="background: blue;">test</div>',
+		// 	infobox_options: {
+		// 		placement: 'over right'
+		// 	}
+		// });
+		// map.add_place_by_address('test91', '2055 parthenais, montréal, qc', {
+		// 	type : 'marker',
+		// 	icon : {
+		// 		src : 'assets/images/marker.png'
+		// 	},
+		// 	// infobox: '<div style="background: blue;">test</div>',
+		// 	infobox: function(data) {
+		// 		return Math.random();
+		// 		return data.ident;
+		// 	},
+		// 	infobox_options: {
+		// 		placement: 'under center'
+		// 	}
+		// });
 
 		// Fit bounds.
 		map.init().ready( function() { map.fit_bounds(); });
 
 		// Focus.
 		map.on('focus', function(item) {
-			console.log(item.data('coords'));
 		});
 
 		map2 = new BB.gmap.controller(document.getElementById('map2'), {
@@ -161,7 +159,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 			},
 			places: {
 				rich: {
-					coords: [45.8064147, -74.0354301],
+                    position: [45.8064147, -74.0354301],
 					type : 'marker',
 					html: function(data) {
 						return '<div style="background: red; height: 60px; width: 60px;">'+data.ident+' OOOOOH</div>'
@@ -173,7 +171,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 					}
 				},
 				rich2: {
-					coords: [45.792743657511, -74.041093589619],
+                    position: [45.792743657511, -74.041093589619],
 					type : 'marker',
 					html: function(data) {
 						return '<div style="background: red; height: 60px; width: 60px;">'+data.ident+' OOOOOH</div>'
@@ -185,7 +183,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 					}
 				},
 				rich3: {
-					coords: [45.799342, -74.0315121],
+                    position: [45.799342, -74.0315121],
 					type : 'marker',
 					html: function(data) {
 						return '<div style="background: red; height: 60px; width: 60px;">'+data.ident+' OOOOOH</div>'
@@ -197,7 +195,7 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 					}
 				},
 				rich4: {
-					coords: [45.798542550638, -74.051208964193],
+                    position: [45.798542550638, -74.051208964193],
 					type : 'marker',
 					html: function(data) {
 						return '<div style="background: red; height: 60px; width: 60px;">'+data.ident+' OOOOOH</div>'
@@ -306,14 +304,22 @@ map.set_styles( <b>[INSERT JSON HERE]</b> );
 				},
 				zoom: 12
 			},
-			max_fitbounds_zoom: 14
+			max_fitbounds_zoom: 14,
+            places: {
+			    test3 : {
+                    type : 'richmarker',
+                    position: [45.798542550638, -74.051208964193],
+                    coords: [45.798542550638, -74.051208964193],
+                    html: '<div style="background: red; height: 60px; width: 60px;">OOOOOH</div>',
+                    selected_html: '<div style="background: green; height: 60px; width: 60px;">OOOOOH</div>',
+                    infobox: $('<div style="background: blue;">test</div>'),
+                    infobox_options: {
+                        placement: 'over center'
+                    }
+                }
+            }
 		});
-		map4.add_place_by_address('test3', '1870 iberville, montréal, qc', {
-			type : 'richmarker',
-			html: '<div style="background: red; height: 60px; width: 60px;">OOOOOH</div>',
-			selected_html: '<div style="background: green; height: 60px; width: 60px;">OOOOOH</div>',
-			infobox: $('<div style="background: blue;">test</div>')
-		});
+		// map4.add_place('test3', );
 		map4.init().ready(function() {
 			map4.fit_bounds();
 		});

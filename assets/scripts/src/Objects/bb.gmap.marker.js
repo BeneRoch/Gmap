@@ -90,8 +90,7 @@ BB.gmap.marker.prototype.parse_options = function(options)
  * @returns {BB.gmap.marker}
  */
 BB.gmap.marker.prototype.init = function() {
-    console.log(this.object());
-
+    this.listeners();
     // Process image before showing.
     this.show();
 
@@ -161,73 +160,20 @@ BB.gmap.marker.prototype.set_image = function(src, success, error) {
     return this;
 };
 
-
 /**
+ * Legacy support..
  *
- * @returns {*}
+ * @returns {HTMLImageElement}
  */
-BB.gmap.marker.prototype.display = function() {
-
-    var height, width;
-
-    var icon = this.icon();
-    if (!(icon instanceof Image)) {
-        // Means we are probably dealing with a PATH object
-        if (typeof icon.path === 'string') {
-            // Yup, was right
-            if (typeof icon.height !== 'undefined' && typeof icon.height !== 'object') {
-                height = parseInt(icon.height);
-            }
-            if (typeof icon.width !== 'undefined' && typeof icon.width !== 'object') {
-                width = parseInt(icon.width);
-            }
-            icon.anchor = new google.maps.Point((width / 2), height);
-            options.icon = icon;
+BB.gmap.marker.prototype.icon = function() {
+    if (!this._image) {
+        // Default value for google map pin
+        return {
+            width: 27,
+            height: 43
         }
     }
-
-    // Mini extend
-    var custom_options = (typeof _data.options === 'object') ? _data.options : {};
-    for (var k in custom_options) {
-        options[k] = custom_options[k];
-    }
-
-    if (this.icon().src) {
-        width = parseFloat(this.icon().width);
-        height = parseFloat(this.icon().height);
-        options.icon = new google.maps.MarkerImage(
-            // image src
-            this.icon().src,
-            // Width, Height.
-            new google.maps.Size(width, height),
-            // Origin for this image; X, Y.
-            new google.maps.Point(0, 0),
-            // Anchor for this image; X, Y.
-            new google.maps.Point((width / 2), height),
-            new google.maps.Size(width, height)
-        );
-    }
-
-    if (typeof this.object() !== 'undefined') {
-        this.object().setOptions(options);
-    } else {
-        var marker = new google.maps.Marker(options);
-        this.set_marker(marker);
-    }
-
-    if (!this._listeners) {
-        this.listeners();
-        this._listeners = true;
-        this.marker_loaded();
-    }
-
-    // From BB.gmap.line
-    // If hidden, don't show it yet.
-    if (this.data('hidden')) {
-        this.hide();
-    }
-
-    return this;
+    return this._image;
 };
 
 
@@ -338,6 +284,11 @@ BB.gmap.marker.prototype.dragend = function(event) {
 BB.gmap.marker.prototype.onclick = function(event) {
     // Scope
     var that = this.bbobject;
+
+    if (that.controller().focused(that.ident())) {
+        return that.blur();
+    }
+
     var _data = that.data();
 
     if (typeof _data.onclick === 'function') {
@@ -399,6 +350,7 @@ BB.gmap.marker.prototype.focus = function() {
 
 BB.gmap.marker.prototype.blur = function() {
     this.check_infobox(false);
+    this.controller().remove_focus(this.ident());
     // Mechanics calls this methods upon map reset
     // We wanna check if the place still exists in the map data entry
     if (!this.controller().get_place(this.ident())) {
@@ -449,13 +401,12 @@ BB.gmap.marker.prototype.check_infobox = function(visible) {
             infobox_options = _data.infobox_options;
         }
 
-
         // Default placement
-        if (!infobox_options.offsetY) {
+        if (!infobox_options.offsetY && that.icon()) {
             infobox_options.offsetY = that.icon().height;
         }
 
-        if (!infobox_options.offsetX) {
+        if (!infobox_options.offsetX && that.icon()) {
             infobox_options.offsetX = (that.icon().width / 2);
         }
 

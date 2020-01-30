@@ -62,67 +62,54 @@ BB.gmap.richmarker.prototype.init = function () {
 
     this.set_content(_data.content);
 
+    this.setup_content();
+
     // No image load, no need to wait.
-    this.display();
+    this.show();
 
     return this;
 };
 
-BB.gmap.richmarker.prototype.set_content = function (content) {
-    this._content = content;
-    return this;
-}
-
-BB.gmap.richmarker.prototype.content = function () {
-    return this._content;
-}
-
 /**
  *
- *
  */
-BB.gmap.richmarker.prototype.display = function () {
+BB.gmap.richmarker.prototype.setup_content = function()
+{
     var _data = this.data();
 
-    if (typeof _data.coords != 'object') {
-        this.error('Requires coordinates [lat, lng] at BB.gmap.richmarker.display()');
-        return false;
-    }
     var options = {
-        map:      this.controller().map(),
-        position: new google.maps.LatLng(_data.coords[0], _data.coords[1])
+        map:      this.controller().map()
     };
 
     options = this.extend(options, _data);
 
-    if (typeof options.html == 'function') {
+    if (typeof options.html === 'function') {
         options.html = options.html(_data);
     }
 
-    if (typeof options.selected_html == 'function') {
+    if (typeof options.selected_html === 'function') {
         options.selected_html = options.selected_html(_data);
     }
 
-    if (typeof this.object() != 'undefined') {
-        this.object().setOptions(options);
-    } else {
-        var marker = customMarker(options);
-        this.set_marker(marker);
-    }
+    options.position = this.get_position();
+
+    var marker = customMarker(options);
+    this.set_marker(marker);
 
     if (!this._listeners) {
         this.listeners();
         this._listeners = true;
         this.controller().place_loaded(this);
     }
+}
 
-    // From BB.gmap.line
-    // If hidden, don't show it yet.
-    if (this.data('hidden')) {
-        this.hide();
-    }
-
+BB.gmap.richmarker.prototype.set_content = function (content) {
+    this._content = content;
     return this;
+};
+
+BB.gmap.richmarker.prototype.content = function () {
+    return this._content;
 };
 
 
@@ -187,6 +174,7 @@ BB.gmap.richmarker.prototype.focus = function () {
 
 BB.gmap.richmarker.prototype.blur = function () {
     this.check_infobox(false);
+    this.controller().remove_focus(this.ident());
 
     // Mechanics calls this methods upon map reset
     // We wanna check if the place still exists in the ma data entry
@@ -222,8 +210,7 @@ BB.gmap.richmarker.prototype.icon = function () {
  */
 customMarker = function (data) {
 
-
-    if (!(typeof BB.gmap.customMarker == "function")) {
+    if (typeof BB.gmap.customMarker !== "function") {
         BB.gmap.customMarker = function (data) {
             this.dirty = true;
             this.MAP = data.map;
