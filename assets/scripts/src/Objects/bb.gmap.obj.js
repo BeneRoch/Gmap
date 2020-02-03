@@ -157,7 +157,7 @@ BB.gmap.object.prototype.delete = function () {
     }
 
     // Delete by Ident
-    this.controller()._delete(this.data('type'), this.ident());
+    this.controller()._delete(this.ident());
 
     return this;
 };

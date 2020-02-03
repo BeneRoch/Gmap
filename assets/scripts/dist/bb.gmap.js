@@ -1317,9 +1317,7 @@ BB.gmap.controller.prototype.clusterer = function () {
  * @return {Object} BB.Gmap options
  */
 BB.gmap.controller.prototype._delete = function (ident) {
-    var places = this.get_places();
-
-    if (typeof places[ident] !== 'undefined') {
+    if (typeof this.__PLACES[ident] !== 'undefined') {
         delete this.__PLACES[ident];
         return true;
     }
@@ -1920,7 +1918,7 @@ BB.gmap.object.prototype.delete = function () {
     }
 
     // Delete by Ident
-    this.controller()._delete(this.data('type'), this.ident());
+    this.controller()._delete(this.ident());
 
     return this;
 };
