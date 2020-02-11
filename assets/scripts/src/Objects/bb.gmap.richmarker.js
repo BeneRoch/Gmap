@@ -101,7 +101,7 @@ BB.gmap.richmarker.prototype.setup_content = function()
         this._listeners = true;
         this.controller().place_loaded(this);
     }
-}
+};
 
 BB.gmap.richmarker.prototype.set_content = function (content) {
     this._content = content;
@@ -154,7 +154,7 @@ BB.gmap.richmarker.prototype.focus = function () {
     this.check_infobox(true);
 
     if (this.controller().focused()) {
-        if (this.controller().focused().ident() == this.ident()) {
+        if (this.controller().focused().ident() === this.ident()) {
             return this;
         }
     }
@@ -198,6 +198,15 @@ BB.gmap.richmarker.prototype.icon = function () {
     }
 };
 
+/**
+ * Hide the marker
+ * @return this (chainable)
+ */
+BB.gmap.richmarker.prototype.hide = function () {
+    this.set_map(null);
+    this.object().dirty = false;
+    return this;
+};
 
 /**
  * Expecting:
@@ -212,7 +221,7 @@ customMarker = function (data) {
 
     if (typeof BB.gmap.customMarker !== "function") {
         BB.gmap.customMarker = function (data) {
-            this.dirty = true;
+            this.dirty = false;
             this.MAP = data.map;
             if (typeof data.map !== 'undefined') {
                 this.setMap(this.MAP);
@@ -229,9 +238,9 @@ customMarker = function (data) {
 
         BB.gmap.customMarker.prototype      = new google.maps.OverlayView();
         BB.gmap.customMarker.prototype.draw = function () {
-            if (this.dirty) {
+            if (!this.dirty) {
                 this.updateHtml();
-                this.dirty = false;
+                this.dirty = true;
             }
             this.setPositionFromDraw();
         };
@@ -289,7 +298,7 @@ customMarker = function (data) {
         BB.gmap.customMarker.prototype.setHtml = function (html) {
             this.html = html;
 
-            this.dirty = true;
+            this.dirty = false;
             this.updateHtml();
             this.setPositionFromDraw();
         };
