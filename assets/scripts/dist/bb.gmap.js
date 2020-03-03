@@ -854,7 +854,6 @@ BB.gmap.controller.prototype.remove_focus = function(ident) {
             delete this.__FOCUSED_ITEM[id];
 
             current.blur();
-            console.log(current.data());
             if (typeof this.data('onblur') === 'function') {
                 var func = this.data('onblur');
                 func(current, this);
