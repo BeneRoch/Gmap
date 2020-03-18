@@ -30,7 +30,7 @@ BB.gmap.object.prototype = new BB.base();
 
 /**
  * Require google object
- * @return this (chainable)
+ * @return this
  */
 BB.gmap.object.prototype.set_object = function (object) {
     this._object = object;
@@ -121,7 +121,7 @@ BB.gmap.object.prototype.map_click = function (event) {
 /**
  * Show the marker
  *
- * @return this (chainable)
+ * @return this
  */
 BB.gmap.object.prototype.show = function () {
     this.set_map(this.controller().map());
@@ -130,7 +130,7 @@ BB.gmap.object.prototype.show = function () {
 
 /**
  * Hide the marker
- * @return this (chainable)
+ * @return this
  */
 BB.gmap.object.prototype.hide = function () {
     this.set_map(null);
@@ -139,7 +139,7 @@ BB.gmap.object.prototype.hide = function () {
 
 /**
  * Deletes the object FOREVER
- * @return this (chainable)
+ * @return this
  */
 BB.gmap.object.prototype.delete = function () {
     this.__DELETED = true;

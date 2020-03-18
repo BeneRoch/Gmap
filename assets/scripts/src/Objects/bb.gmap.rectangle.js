@@ -50,8 +50,6 @@ BB.gmap.rectangle.prototype = Object.create(BB.gmap.object.prototype);
  *
  */
 BB.gmap.rectangle.prototype.init = function() {
-    var _data = this.data();
-
     return this;
 };
 
@@ -65,9 +63,6 @@ BB.gmap.rectangle.prototype.delete = function() {
         }
     }
 
-    // Index stuff before doesn't seem to work.
-    this.hide_markers();
-
     // Parent
-    BB.gmap.object.prototype.delete.call(this);
+    return BB.gmap.object.prototype.delete.call(this);
 };

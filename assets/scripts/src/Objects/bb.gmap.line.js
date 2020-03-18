@@ -18,7 +18,7 @@ BB.gmap = BB.gmap || {};
  * @param controller
  * @returns {BB.gmap}
  */
-BB.gmap.line = function(data, controller) {
+BB.gmap.line = function (data, controller) {
 
     // Call the supra class constructor with the arguments
     // The controller and object are set in the BB.gmap.object Class
@@ -35,8 +35,7 @@ BB.gmap.line.prototype = Object.create(BB.gmap.object.prototype);
  *
  * @returns {google.maps.Polyline}
  */
-BB.gmap.line.prototype.create_object = function()
-{
+BB.gmap.line.prototype.create_object = function () {
     return new google.maps.Polyline(this._options);
 };
 
@@ -45,8 +44,7 @@ BB.gmap.line.prototype.create_object = function()
  * @param options
  * @returns {*}
  */
-BB.gmap.line.prototype.parse_options = function(options)
-{
+BB.gmap.line.prototype.parse_options = function (options) {
     delete options.type;
     options.path = this.convert_recursive_array_to_lat_lng(options.path);
     if (typeof options.styles === 'undefined') {
@@ -58,7 +56,7 @@ BB.gmap.line.prototype.parse_options = function(options)
 /**
  *
  */
-BB.gmap.line.prototype.init = function() {
+BB.gmap.line.prototype.init = function () {
     this.listeners();
     this.show();
     this.controller().place_loaded(this);
@@ -71,8 +69,7 @@ BB.gmap.line.prototype.init = function() {
  *
  * @returns {*}
  */
-BB.gmap.line.prototype.get_path = function()
-{
+BB.gmap.line.prototype.get_path = function () {
     return this.object().getPath();
 };
 
@@ -83,8 +80,7 @@ BB.gmap.line.prototype.get_path = function()
  * @param path
  * @returns {BB.gmap.line}
  */
-BB.gmap.line.prototype.set_path = function(path)
-{
+BB.gmap.line.prototype.set_path = function (path) {
     // Make sure path is defined as expected.
     path = this.convert_recursive_array_to_lat_lng(path);
     this.object().setPath(path);
@@ -95,22 +91,22 @@ BB.gmap.line.prototype.set_path = function(path)
 /**
  * AUTOMATICALLY SETS THE STYLE
  */
-BB.gmap.line.prototype.set_styles = function(styles) {
+BB.gmap.line.prototype.set_styles = function (styles) {
     this.object().setOptions(styles);
     return this;
 };
 
-BB.gmap.line.prototype.get_styles = function() {
+BB.gmap.line.prototype.get_styles = function () {
     return this._options.styles;
 };
 
 /**
  *
- * @param path
+ * @param coords
  * @param index
  * @returns {*}
  */
-BB.gmap.line.prototype.add_point = function(coords, index) {
+BB.gmap.line.prototype.add_point = function (coords, index) {
     // Not good
     if (typeof coords !== 'object') {
         return false;
@@ -120,10 +116,6 @@ BB.gmap.line.prototype.add_point = function(coords, index) {
         coords = [coords.lat(), coords.lng()];
     }
 
-    // Not good.
-    // if (!(coords instanceof google.maps.LatLng)) {
-    //     coords = this.controller().translate_coords(coords);
-    // }
     if ((!(coords instanceof google.maps.LatLng)) && (typeof coords[0] === 'undefined' || typeof coords[1] === 'undefined')) {
         // Something missing
         return false;
@@ -155,20 +147,20 @@ BB.gmap.line.prototype.add_point = function(coords, index) {
     // Add marker on top of it
     if (this.data('editable')) {
         var marker = new BB.gmap.marker({
-            coords: coords,
+            coords:    coords,
             draggable: true, // The whole point of these.
 
             // icon: 'assets/images/marker-tri.png',
             icon: {
-                path: google.maps.SymbolPath.CIRCLE,
+                path:  google.maps.SymbolPath.CIRCLE,
                 scale: 4
             },
 
-            editable: true,
-            ondragend: function(marker, event) {
+            editable:  true,
+            ondragend: function (marker, event) {
                 that.move_point(marker.object().index, [event.latLng.lat(), event.latLng.lng()]);
             },
-            ondelete: function(marker) {
+            ondelete:  function (marker) {
                 that.remove_point(marker.object().index);
                 that.focus();
 
@@ -176,7 +168,7 @@ BB.gmap.line.prototype.add_point = function(coords, index) {
                     that.delete();
                 }
             },
-            index: index
+            index:     index
         }, that.controller());
 
         if (!this.__MARKERS) {
@@ -191,12 +183,12 @@ BB.gmap.line.prototype.add_point = function(coords, index) {
 /**
  * Adds point on map click
  */
-BB.gmap.line.prototype.map_click = function(event) {
+BB.gmap.line.prototype.map_click = function (event) {
 
 };
 
 
-BB.gmap.line.prototype.listeners = function() {
+BB.gmap.line.prototype.listeners = function () {
     // Scope
     this.object().bbobject = this;
 
@@ -210,9 +202,9 @@ BB.gmap.line.prototype.listeners = function() {
 
 /**
  * Remove all listeners associated with the current object
- * @return {thisArg} [Chainable]
+ * @return {this}
  */
-BB.gmap.line.prototype.clear_listeners = function() {
+BB.gmap.line.prototype.clear_listeners = function () {
 
     // Listener removal
     google.maps.event.clearListeners(this.object(), 'mouseover');
@@ -228,8 +220,8 @@ BB.gmap.line.prototype.clear_listeners = function() {
  * @see this.listeners()
  * @param event
  */
-BB.gmap.line.prototype.mouse_over = function(event) {
-    var that = this.bbobject;
+BB.gmap.line.prototype.mouse_over = function (event) {
+    var that  = this.bbobject;
     var _data = that.data();
 
 
@@ -248,8 +240,8 @@ BB.gmap.line.prototype.mouse_over = function(event) {
  * @see this.listeners()
  * @param event
  */
-BB.gmap.line.prototype.mouse_out = function(event) {
-    var that = this.bbobject;
+BB.gmap.line.prototype.mouse_out = function (event) {
+    var that  = this.bbobject;
     var _data = that.data();
 
     if (typeof _data.onmouseout === 'function') {
@@ -273,8 +265,8 @@ BB.gmap.line.prototype.mouse_out = function(event) {
  * @see this.listeners()
  * @param event
  */
-BB.gmap.line.prototype.mouse_down = function(event) {
-    var that = this.bbobject;
+BB.gmap.line.prototype.mouse_down = function (event) {
+    // var that = this.bbobject;
     // Go back to original state
     // that.set_styles( that.get_data('styles') );
 };
@@ -285,8 +277,8 @@ BB.gmap.line.prototype.mouse_down = function(event) {
  * @see this.listeners()
  * @param event
  */
-BB.gmap.line.prototype.mouse_up = function(event) {
-    var that = this.bbobject;
+BB.gmap.line.prototype.mouse_up = function (event) {
+    // var that = this.bbobject;
     // Go back to original state
     // that.set_styles( that.get_data('styles') );
 };
@@ -296,15 +288,15 @@ BB.gmap.line.prototype.mouse_up = function(event) {
  * @see this.listeners()
  * @param event
  */
-BB.gmap.line.prototype.click = function(event) {
+BB.gmap.line.prototype.click = function (event) {
     // Scope
-    var that = this.bbobject;
+    var that  = this.bbobject;
     var _data = that.data();
     that.focus();
 
-    if (typeof _data.onclick == 'function') {
+    if (typeof _data.onclick === 'function') {
         _data.onclick(that, event);
-    } else if (typeof _data.onclick == 'string' && typeof window[_data.onclick] == 'function') {
+    } else if (typeof _data.onclick === 'string' && typeof window[_data.onclick] === 'function') {
         window[_data.onclick](that, event);
     }
 };
@@ -314,7 +306,7 @@ BB.gmap.line.prototype.click = function(event) {
  * Set focus on the current item, tell so to the controller
  * @return this (chainable)
  */
-BB.gmap.line.prototype.focus = function() {
+BB.gmap.line.prototype.focus = function () {
     // Counter of ASYNC moves such as delete, into lost focus
     if (this.__DELETED) {
         return false;
@@ -336,14 +328,12 @@ BB.gmap.line.prototype.focus = function() {
  * Go to the original state of the object
  * @return this (chainable)
  */
-BB.gmap.line.prototype.blur = function() {
+BB.gmap.line.prototype.blur = function () {
     // Counter of ASYNC moves such as delete, into lost focus
     if (this.__DELETED) {
         return false;
     }
     this.set_styles(this.get_data('styles'));
-    // No markers when not selected
-    // this.hide_markers();
 
     return this;
 };
@@ -352,12 +342,12 @@ BB.gmap.line.prototype.blur = function() {
  *
  * @return google LatLngBounds object
  */
-BB.gmap.line.prototype.get_bounds = function() {
+BB.gmap.line.prototype.get_bounds = function () {
     // Scope
     var that = this;
 
     var bounds = new google.maps.LatLngBounds();
-    var path = that.object().getPaths();
+    var path   = that.object().getPaths();
     var p;
     for (var i = 0; i < path.getLength(); i++) {
         p = path.getAt(i);
@@ -372,32 +362,10 @@ BB.gmap.line.prototype.get_bounds = function() {
  * returns a nested mcvarray in order to fit the polygon path declaration
  * @return MCVArray path
  */
-BB.gmap.line.prototype.get_position = function() {
+BB.gmap.line.prototype.get_position = function () {
     var array = new google.maps.MVCArray();
     array.push(this.object().getPath());
     return array;
-};
-
-/**
- * Make dure the coords data get's updated everytime it changes, for export
- * @return this (chainable)
- */
-BB.gmap.line.prototype.update_coords = function() {
-    var path = this.get_path();
-    var ret = [];
-    //
-    // console.log(path);
-    // window.test = path;
-    // path.forEach(function(p) {
-    //     console.log(p);
-    //     ret.push([p.lat(), p.lng()]);
-    // });
-    //
-    // this.set_data({
-    //     path: ret
-    // });
-
-    return this;
 };
 
 
@@ -405,27 +373,26 @@ BB.gmap.line.prototype.update_coords = function() {
  * @see BB.gmap.controller.export
  * @return data
  */
-BB.gmap.line.prototype.export = function() {
+BB.gmap.line.prototype.export = function () {
     var _data = this.data();
     // At this point, we do not need these
-    if (typeof _data.styles.path != 'undefined') {
+    if (typeof _data.styles.path !== 'undefined') {
         delete _data.styles.path;
     }
     return this.data();
 };
 
-BB.gmap.line.prototype.delete = function() {
-    var i = 0;
-    var total = this.__MARKERS.length;
-    if (total) {
-        for (; i < total; i++) {
-            this.remove_point(i);
+BB.gmap.line.prototype.delete = function () {
+    if (typeof this.__MARKERS === 'object') {
+        var i     = 0;
+        var total = this.__MARKERS.length;
+        if (total) {
+            for (; i < total; i++) {
+                this.remove_point(i);
+            }
         }
     }
 
-    // Index stuff before doesn't seem to work.
-    this.hide_markers();
-
     // Parent
-    BB.gmap.object.prototype.delete.call(this);
+    return BB.gmap.object.prototype.delete.call(this);
 };
