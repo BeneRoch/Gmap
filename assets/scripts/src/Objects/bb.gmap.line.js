@@ -50,6 +50,9 @@ BB.gmap.line.prototype.parse_options = function (options) {
     if (typeof options.styles === 'undefined') {
         options.styles = this.controller().default_styles();
     }
+
+    var styles = options.styles;
+    options = this.extend(options, styles);
     return options;
 };
 
