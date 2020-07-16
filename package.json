@@ -1,7 +1,7 @@
 {
     "name": "beneroch-gmap",
     "title": "Gmap",
-    "version": "1.0.0-alpha.7",
+    "version": "1.0.0-alpha.8",
     "author": "Bene <roch.bene@gmail.com>",
     "description": "JavaScript library to handle the Google Maps API.",
     "homepage": "https://github.com/BeneRoch/Gmap",

@@ -1740,10 +1740,12 @@ function init_infoBox() {
             elem = infobox;
         }
 
-        // Let's get rid of jQuery for this one
-        if (elem instanceof jQuery) {
-            // Select DOMElement
-            elem = elem.get(0);
+        if (typeof jQuery !== 'undefined') {
+            // Let's get rid of jQuery for this one
+            if (elem instanceof jQuery) {
+                // Select DOMElement
+                elem = elem.get(0);
+            }
         }
 
         this.__ELEM = elem;
