@@ -1,7 +1,5 @@
 /**
  * @name BB Gmap Infobox
- * @version version 1.0
- * @author Bene Roch
  * @description
  * Map object infobox
  * Displays as the native infowindow, but with custom HTML.

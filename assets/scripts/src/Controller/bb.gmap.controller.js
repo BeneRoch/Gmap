@@ -60,9 +60,11 @@ BB.gmap.controller = function (container, data) {
     // DOM Element where is applied the actual map
     this.__CONTAINER = container;
 
-    // all places are stucked there
-    // this allows a quick research by ident
+    // Places container
     this.__PLACES = {};
+
+    // Layers
+    this.__LAYERS = {};
 
     // Focused item
     // could be line, marker, polygon, polygon vertex, whatever.
@@ -70,8 +72,6 @@ BB.gmap.controller = function (container, data) {
 
     // MarkerClusterer
     this.__CLUSTERER = undefined;
-
-    this.xhrs = undefined;
 
     this.set_data(data);
 
@@ -221,12 +221,7 @@ BB.gmap.controller.prototype.init = function () {
     this._MAP = new google.maps.Map(this.container(), options);
 
     // Any places yet?
-    if (typeof this.data('places') !== 'object') {
-        // This might be an unnecessary error
-        this.error('You haven\'t set any places yet');
-    } else {
-        this.add_places(this.data('places'));
-    }
+    this.add_places(this.data('places'));
 
     // Add listeners (map click)
     this.listeners();
@@ -294,7 +289,7 @@ BB.gmap.controller.prototype.add_by_url = function (url, placesIdent, map) {
         }
 
         return previous;
-    }
+    };
 
     var placeMap = function (item, index) {
         var out = {};
@@ -304,13 +299,13 @@ BB.gmap.controller.prototype.add_by_url = function (url, placesIdent, map) {
         }
 
         return out;
-    }
+    };
 
     var xhttp                = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
+        if (this.readyState === 4 && this.status === 200) {
             var result = JSON.parse(this.responseText);
-            if (typeof placesIdent === 'string' && placesIdent != '') {
+            if (typeof placesIdent === 'string' && placesIdent !== '') {
                 result = mapping(result, placesIdent)
             }
             if (result.hasOwnProperty('map')) {
@@ -321,10 +316,7 @@ BB.gmap.controller.prototype.add_by_url = function (url, placesIdent, map) {
 
     xhttp.open("GET", url, true);
     xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
-    // xhttp.setRequestHeader("Accept", "application/json");
     xhttp.send();
-
-    // this.xhrs.push(xhttp);
 };
 
 /**
@@ -336,8 +328,8 @@ BB.gmap.controller.prototype.add_by_url = function (url, placesIdent, map) {
  *
  */
 BB.gmap.controller.prototype.add_places = function (places) {
+    // Places needs to be an object
     if (typeof places !== 'object') {
-        this.error('Invalid places specified :' + places);
         return this;
     }
 
@@ -356,13 +348,11 @@ BB.gmap.controller.prototype.add_places = function (places) {
  */
 BB.gmap.controller.prototype.add_place = function (ident, data) {
     if (!data) {
-        this.error('Missing parameter BB.gmap.controller.prototype.add_place ( ident, data ) : ( ' + ident + ', ' + data + ' )');
         return this;
     }
 
     // Every place should have is uniq ident
     if (typeof data.type !== 'string') {
-        this.error('Missing parameter "type" in BB.gmap.controller.prototype.add_place');
         return this;
     }
 
@@ -370,6 +360,8 @@ BB.gmap.controller.prototype.add_place = function (ident, data) {
     data.ident = ident;
 
     var type = data.type;
+    var defaultStyles = this.default_styles();
+
     switch (type) {
         case 'marker':
             this.set_place(ident, new BB.gmap.marker(data, this));
@@ -380,7 +372,6 @@ BB.gmap.controller.prototype.add_place = function (ident, data) {
             break;
 
         case 'line':
-            var defaultStyles = this.default_styles();
             if (typeof data.styles === 'undefined') {
                 data.styles = defaultStyles;
             }
@@ -388,11 +379,14 @@ BB.gmap.controller.prototype.add_place = function (ident, data) {
             break;
 
         case 'polygon':
-            var defaultStyles = this.default_styles();
             if (typeof data.styles === 'undefined') {
                 data.styles = defaultStyles;
             }
             this.set_place(ident, new BB.gmap.polygon(data, this));
+            break;
+
+        case 'bike_layer':
+
             break;
     }
 
@@ -911,7 +905,7 @@ BB.gmap.controller.prototype.get_all_markers = function () {
     var places = this.get_places();
     for (var k in places) {
         var place = places[k];
-        if (place.data('type') === 'marker') {
+        if (place.data('type') === 'marker' || place.data('type') === 'richmarker') {
             ret.push(place.object());
         }
     }

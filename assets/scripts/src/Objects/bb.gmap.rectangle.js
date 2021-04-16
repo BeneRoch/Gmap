@@ -1,10 +1,5 @@
 /**
  * @name BB Gmap Rectangle
- * @version version 1.0
- * @author Bene Roch
- * @description
- * Map LINE
- *
  */
 
 var BB = BB || {};

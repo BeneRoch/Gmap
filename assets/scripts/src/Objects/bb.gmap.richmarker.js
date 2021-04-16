@@ -1,12 +1,5 @@
 /**
- * @name BB Gmap controller
- * @version version 1.0
- * @author Bene Roch
- * @description
- * MAP Controller
- * Controller for a google map object
- * This makes it possible to track all whats going on
- * with the google map
+ * @name BB Gmap RichMarker
  */
 
 var BB = BB || {};
@@ -205,6 +198,16 @@ BB.gmap.richmarker.prototype.icon = function () {
 BB.gmap.richmarker.prototype.hide = function () {
     this.set_map(null);
     this.object().dirty = false;
+    return this;
+};
+
+/**
+ * Hide the marker
+ * @return this (chainable)
+ */
+BB.gmap.richmarker.prototype.show = function () {
+    this.object().dirty = false;
+    this.set_map(this.controller().map());
     return this;
 };
 

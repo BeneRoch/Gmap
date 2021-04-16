@@ -1,7 +1,5 @@
 /**
  * @name BB Gmap controller
- * @version version 1.0
- * @author Bene Roch
  * @description
  * MAP Controller
  * Controller for a google map object
@@ -80,7 +78,6 @@ BB.gmap.marker.prototype.create_object = function()
  */
 BB.gmap.marker.prototype.parse_options = function(options)
 {
-    delete options.type;
     options.position = this.convert_recursive_array_to_lat_lng(options.position);
     return options;
 };

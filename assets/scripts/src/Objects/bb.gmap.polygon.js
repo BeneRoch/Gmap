@@ -1,10 +1,5 @@
 /**
  * @name BB Gmap Line
- * @version version 1.0
- * @author Bene Roch
- * @description
- * Map LINE
- *
  */
 
 var BB = BB || {};
@@ -50,7 +45,6 @@ BB.gmap.polygon.prototype.create_object = function()
  */
 BB.gmap.polygon.prototype.parse_options = function(options)
 {
-    delete options.type;
     options.paths = this.convert_recursive_array_to_lat_lng(options.paths);
 
 

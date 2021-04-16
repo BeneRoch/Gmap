@@ -1,10 +1,5 @@
 /**
  * @name BB Gmap Line
- * @version version 1.0
- * @author Bene Roch
- * @description
- * Map LINE
- *
  */
 
 var BB = BB || {};
@@ -45,7 +40,6 @@ BB.gmap.line.prototype.create_object = function () {
  * @returns {*}
  */
 BB.gmap.line.prototype.parse_options = function (options) {
-    delete options.type;
     options.path = this.convert_recursive_array_to_lat_lng(options.path);
     if (typeof options.styles === 'undefined') {
         options.styles = this.controller().default_styles();
